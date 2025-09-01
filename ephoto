@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מערכת אישורי הגעה</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Heebo', sans-serif;
+            background-color: #f3f4f6;
+            direction: rtl;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+
+    <!-- Modal for messages -->
+    <div id="messageModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 rounded-xl shadow-lg text-center max-w-sm w-full">
+            <p id="modalMessage" class="text-gray-800 text-lg mb-4"></p>
+            <button id="closeModalBtn" class="bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition duration-300">
+                סגור
+            </button>
+        </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-8 md:p-12 space-y-8">
+        <header class="text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-2">מערכת אישורי הגעה</h1>
+            <p class="text-lg text-gray-600">ניהול קל ומקצועי של אישורי הגעה</p>
+        </header>
+
+        <!-- RSVP Form -->
+        <div id="rsvpForm" class="bg-gray-50 p-6 rounded-xl shadow-inner border border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-700 mb-4 text-center">אישור הגעה</h2>
+            <div class="space-y-4">
+                <div>
+                    <label for="nameInput" class="block text-gray-700 font-medium mb-2">שם מלא</label>
+                    <input type="text" id="nameInput" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="הכנס שם מלא">
+                </div>
+                <div>
+                    <label for="phoneInput" class="block text-gray-700 font-medium mb-2">מספר טלפון</label>
+                    <input type="tel" id="phoneInput" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="הכנס מספר טלפון (לדוגמה: 0501234567)">
+                </div>
+                <div>
+                    <label for="guestsInput" class="block text-gray-700 font-medium mb-2">מספר מגיעים (כולל אותך)</label>
+                    <input type="number" id="guestsInput" min="1" value="1" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            <button id="submitRsvpBtn" class="w-full bg-blue-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-600 transition duration-300 mt-6 shadow-md">
+                שלח אישור הגעה
+            </button>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard" class="mt-8 bg-gray-50 p-6 rounded-xl shadow-inner border border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-700 mb-4 text-center">לוח בקרה</h2>
+            <p class="text-sm text-gray-500 text-center mb-4">אתה מחובר כרגע בתור: <span id="userIdDisplay" class="font-mono break-all"></span></p>
+            <div class="mb-4 text-center">
+                <p class="text-xl text-gray-600">סה"כ מאשרים: <span id="totalConfirmed" class="font-bold text-gray-800">0</span></p>
+                <p class="text-xl text-gray-600">סה"כ מגיעים: <span id="totalGuests" class="font-bold text-gray-800">0</span></p>
+            </div>
+            <div class="overflow-x-auto rounded-lg border border-gray-200">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">שם</th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">טלפון</th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">מגיעים</th>
+                            <th scope="col" class="relative px-6 py-3">
+                                <span class="sr-only">עריכה</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="inviteesTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Invitees list will be rendered here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Enable debug logs for Firestore to see what's happening
+        setLogLevel('debug');
+
+        // Global variables provided by the Canvas environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const authToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db;
+        let auth;
+        let inviteesRef;
+        let userId = '';
+
+        const rsvpForm = document.getElementById('rsvpForm');
+        const dashboard = document.getElementById('dashboard');
+        const userIdDisplay = document.getElementById('userIdDisplay');
+        const nameInput = document.getElementById('nameInput');
+        const phoneInput = document.getElementById('phoneInput');
+        const guestsInput = document.getElementById('guestsInput');
+        const submitRsvpBtn = document.getElementById('submitRsvpBtn');
+        const inviteesTableBody = document.getElementById('inviteesTableBody');
+        const totalConfirmedSpan = document.getElementById('totalConfirmed');
+        const totalGuestsSpan = document.getElementById('totalGuests');
+        const messageModal = document.getElementById('messageModal');
+        const modalMessage = document.getElementById('modalMessage');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+
+        function showMessage(message) {
+            modalMessage.textContent = message;
+            messageModal.classList.remove('hidden');
+            messageModal.classList.add('flex');
+        }
+
+        closeModalBtn.addEventListener('click', () => {
+            messageModal.classList.add('hidden');
+            messageModal.classList.remove('flex');
+        });
+
+        // Initialize Firebase and handle authentication
+        const initFirebase = async () => {
+            try {
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                if (authToken) {
+                    await signInWithCustomToken(auth, authToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                userId = auth.currentUser.uid;
+                userIdDisplay.textContent = userId;
+                // Use a public collection for open registration
+                inviteesRef = collection(db, `artifacts/${appId}/public/data/registrations`);
+
+                // Show both form and dashboard
+                rsvpForm.classList.remove('hidden');
+                dashboard.classList.remove('hidden');
+
+                // Listen for real-time updates on the invitees list
+                onSnapshot(inviteesRef, (snapshot) => {
+                    updateDashboard(snapshot);
+                });
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+                showMessage("אירעה שגיאה בטעינת המערכת. אנא נסה/י לרענן את הדף.");
+            }
+        };
+
+        // Submit RSVP form
+        submitRsvpBtn.addEventListener('click', async () => {
+            const name = nameInput.value.trim();
+            const phone = phoneInput.value.trim();
+            const guests = parseInt(guestsInput.value, 10);
+
+            if (!name || !phone || isNaN(guests) || guests < 1) {
+                showMessage("אנא מלא/י את כל השדות כראוי.");
+                return;
+            }
+
+            try {
+                const inviteeData = {
+                    name: name,
+                    phone: phone,
+                    guests: guests
+                };
+
+                // Use the phone number as the document ID for easy lookup
+                await setDoc(doc(inviteesRef, phone), inviteeData);
+
+                showMessage("אישור ההגעה נשלח בהצלחה!");
+                nameInput.value = '';
+                phoneInput.value = '';
+                guestsInput.value = '1';
+            } catch (e) {
+                console.error("Error updating document: ", e);
+                showMessage("אירעה שגיאה בשליחת אישור ההגעה. אנא נסה/י שוב.");
+            }
+        });
+
+        // Update dashboard with real-time data
+        const updateDashboard = (snapshot) => {
+            let totalConfirmed = 0;
+            let totalGuests = 0;
+            inviteesTableBody.innerHTML = '';
+
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 transition-colors duration-200';
+
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${data.name || 'לא ידוע'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${data.phone || 'לא ידוע'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${data.guests}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button onclick="deleteInvitee('${data.phone}')" class="text-red-600 hover:text-red-900 transition-colors duration-200">
+                            מחק
+                        </button>
+                    </td>
+                `;
+                inviteesTableBody.appendChild(tr);
+
+                totalConfirmed++;
+                totalGuests += data.guests;
+            });
+
+            totalConfirmedSpan.textContent = totalConfirmed;
+            totalGuestsSpan.textContent = totalGuests;
+        };
+
+        window.deleteInvitee = async (phone) => {
+            try {
+                await deleteDoc(doc(db, `artifacts/${appId}/public/data/registrations`, phone));
+                showMessage("המוזמן נמחק בהצלחה.");
+            } catch (e) {
+                console.error("Error removing document: ", e);
+                showMessage("אירעה שגיאה במחיקת המוזמן. אנא נסה/י שוב.");
+            }
+        };
+
+        initFirebase();
+    </script>
+</body>
+</html>

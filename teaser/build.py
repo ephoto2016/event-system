@@ -42,14 +42,14 @@ async def render_card(pw_page, card, fmt, label=None):
     d = os.path.join(WORK, f'{card}_{fmt}'); shutil.rmtree(d, ignore_errors=True); os.makedirs(d)
     for i in range(int(dur * FPS)):
         await pw_page.evaluate(f'window.at({i / FPS}, {i})')
-        await pw_page.screenshot(path=f'{d}/{i:04d}.png')
+        await pw_page.screenshot(path=f'{d}/{i:04d}.jpg', type='jpeg', quality=95)
     seg = os.path.join(WORK, f'{card}_{fmt}.mp4')
     audio = ['-f', 'lavfi', '-i', f'anullsrc=r=48000:cl=stereo']
     af = []
     if card == 'stigma':   # low static bed that follows the on-screen noise
         audio = ['-f', 'lavfi', '-i', f'anoisesrc=color=pink:amplitude=0.12:r=48000:d={dur}']
         af = ['-af', f'lowpass=f=3500,volume=0.5,afade=t=in:d=0.4,afade=t=out:st={dur-0.6}:d=0.6,aformat=channel_layouts=stereo']
-    run('ffmpeg', '-y', '-framerate', str(FPS), '-i', f'{d}/%04d.png', *audio, *af, '-t', str(dur),
+    run('ffmpeg', '-y', '-framerate', str(FPS), '-i', f'{d}/%04d.jpg', *audio, *af, '-t', str(dur),
         '-c:v', 'libx264', '-crf', '16', '-pix_fmt', 'yuv420p', '-r', str(FPS), '-c:a', 'aac', '-ar', '48000', '-ac', '2', '-shortest', seg)
     return seg
 
@@ -59,12 +59,12 @@ def clip_segment(name, src, ss, ee, label, fmt):
     out = os.path.join(WORK, f'{name}_{fmt}.mp4')
     fade = f"fade=t=in:st=0:d=0.25,fade=t=out:st={dur-0.25}:d=0.25"
     if fmt == 'h':
-        vf = (f"[0:v]scale={w}:{h},setsar=1,fps={FPS}[b];[1:v]format=rgba,fade=t=in:st=0.4:d=0.4:alpha=1[l];"
+        vf = (f"[0:v]scale={w}:{h},setsar=1,fps={FPS}[b];[1:v]format=rgba,fade=t=in:st=0.4:d=0.4:alpha=1,fade=t=out:st=3.2:d=0.4:alpha=1[l];"
               f"[b][l]overlay=0:0,{fade}[v]")
     else:   # blurred full-bleed backdrop + the 16:9 clip centred
         vf = (f"[0:v]split[a][b];[a]scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h},boxblur=28:4,eq=brightness=-0.15,fps={FPS}[bg];"
               f"[b]scale={w}:-2,setsar=1,fps={FPS}[fg];[bg][fg]overlay=0:(H-h)/2[c];"
-              f"[1:v]format=rgba,fade=t=in:st=0.4:d=0.4:alpha=1[l];[c][l]overlay=0:0,{fade}[v]")
+              f"[1:v]format=rgba,fade=t=in:st=0.4:d=0.4:alpha=1,fade=t=out:st=3.2:d=0.4:alpha=1[l];[c][l]overlay=0:0,{fade}[v]")
     run('ffmpeg', '-y', '-ss', str(ss), '-t', str(dur), '-i', src, '-loop', '1', '-t', str(dur), '-i', lab,
         '-filter_complex', vf, '-map', '[v]', '-map', '0:a',
         '-af', f'afade=t=in:d=0.25,afade=t=out:st={dur-0.25}:d=0.25,aresample=48000,aformat=channel_layouts=stereo',

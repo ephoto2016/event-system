@@ -105,7 +105,7 @@ def add_music(dry, final):
     # music sits under the clip audio: sidechain-duck it whenever the clips' own sound plays
     fc = ("[0:a]asplit[sc][main];[1:a]aresample=48000,aformat=channel_layouts=stereo,volume=0.9,"
           f"afade=t=in:d=1.0,afade=t=out:st={dur-2.0}:d=2.0[m];[m][sc]sidechaincompress=threshold=0.03:ratio=9:attack=20:release=500[d];"
-          "[main][d]amix=inputs=2:duration=first:normalize=0[a]")
+          "[main][d]amix=inputs=2:duration=first:normalize=0,alimiter=limit=0.89:level=false[a]")
     run('ffmpeg', '-y', '-i', dry, '-stream_loop', '-1', '-i', mus, '-filter_complex', fc, '-map', '0:v', '-map', '[a]',
         '-t', str(dur), '-c:v', 'copy', '-c:a', 'aac', '-b:a', '160k', '-movflags', '+faststart', final)
 

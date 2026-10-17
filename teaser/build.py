@@ -43,8 +43,9 @@ if VERSION == 'v2':
     TURN_AT, PREFIX = None, ''          # music turns upbeat at 9s
 else:   # short: problem -> (bridge) -> solution, no pros/cons
     # p_roip stops before the operator reaches for the console (~3.9s in the source) and holds the last frame for 0.5s
+    # p_lio starts at 5.4s (the source has a dark scene transition at ~5.1-5.3s), holds its last frame 0.6s
     # s_lio = the first part of the Lionet video: phone -> cellular cloud -> bridged site -> HQ hears
-    CLIPS = [('p_tac', F['wadi'], 5.2, 8.2, 'p_tac'), ('p_roip', F['roip1'], 2.0, 3.8, 'p_roip', 0.5), ('p_lio', F['lionet'], 5.0, 7.2, 'p_lio'),
+    CLIPS = [('p_tac', F['wadi'], 5.2, 8.2, 'p_tac'), ('p_roip', F['roip1'], 2.0, 3.8, 'p_roip', 0.5), ('p_lio', F['lionet'], 5.4, 6.9, 'p_lio', 0.6),
              ('s_tac', F['rad'], 5.2, 8.4, 's_tac'), ('s_roip', F['roip1'], 5.5, 8.5, 's_roip'), ('s_lio', F['lionet'], 0.3, 3.8, 's_lio')]
     CARD_NAMES = ['intro', 'stigma3', 'reveal3', 'bridge', 'cta', 'close3']
     ORDER = ['intro', 'stigma3', 'reveal3', 'p_tac', 'p_roip', 'p_lio', 'bridge', 's_tac', 's_roip', 's_lio', 'cta', 'close3']
@@ -120,15 +121,17 @@ def gen_music(path, dur, turn=9):
         f"amix=inputs={len(parts)}:normalize=0,lowpass=f=6500,aformat=channel_layouts=stereo,afade=t=in:d=1.2,afade=t=out:st={dur-2.5}:d=2.5", path)
 
 def gen_end_sfx(path, dur, t_close):
-    """Ending effect (synthesised): riser into the closing card, deep impact on the headline, short shimmer on the second line."""
+    """Ending effect (synthesised): riser into the closing card, deep impact on the headline, short shimmer on the second line.
+    Offsets are clamped with max(.,0) so exp() never overflows before the gate opens (inf*0 = NaN would poison the mix)."""
     r0, hit, chime = t_close - 1.4, t_close + 0.15, t_close + 0.8
+    th, tc, tr = f"max(t-{hit},0)", f"max(t-{chime},0)", f"max(t-{r0},0)"
     parts = [
       # rising noise + sine sweep
-      f"aevalsrc='gt(t,{r0})*lt(t,{hit})*pow((t-{r0})/{hit - r0},2)*(0.35*(random(0)*2-1)+0.25*sin(2*PI*(300*(t-{r0})+500*pow(t-{r0},3))))':s=48000:d={dur}",
+      f"aevalsrc='gt(t,{r0})*lt(t,{hit})*pow({tr}/{hit - r0},2)*(0.35*(random(0)*2-1)+0.25*sin(2*PI*(300*{tr}+500*pow({tr},3))))':s=48000:d={dur}",
       # impact: pitch-dropping sub + noise burst
-      f"aevalsrc='gt(t,{hit})*(0.9*exp(-2.6*(t-{hit}))*sin(2*PI*(40*(t-{hit})+2.5*(1-exp(-8*(t-{hit})))))+0.45*exp(-22*(t-{hit}))*(random(0)*2-1))':s=48000:d={dur}",
+      f"aevalsrc='gt(t,{hit})*(0.9*exp(-2.6*{th})*sin(2*PI*(40*{th}+2.5*(1-exp(-8*{th}))))+0.45*exp(-22*{th})*(random(0)*2-1))':s=48000:d={dur}",
       # chime / shimmer
-      f"aevalsrc='gt(t,{chime})*exp(-2.4*(t-{chime}))*(0.22*sin(2*PI*1318.5*t)+0.16*sin(2*PI*1975.5*t)+0.09*sin(2*PI*2637*t))':s=48000:d={dur}",
+      f"aevalsrc='gt(t,{chime})*exp(-2.4*{tc})*(0.22*sin(2*PI*1318.5*t)+0.16*sin(2*PI*1975.5*t)+0.09*sin(2*PI*2637*t))':s=48000:d={dur}",
     ]
     ins = []
     for p in parts: ins += ['-f', 'lavfi', '-i', p]

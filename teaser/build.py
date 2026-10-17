@@ -75,7 +75,7 @@ async def render_card(pw_page, card, fmt, label=None):
     audio = ['-f', 'lavfi', '-i', f'anullsrc=r=48000:cl=stereo']
     af = []
     if card.startswith('stigma'):   # low static bed that follows the on-screen noise
-        audio = ['-f', 'lavfi', '-i', f'anoisesrc=color=pink:amplitude={0.12 if VERSION == "v2" else 0.3}:r=48000:d={dur}']
+        audio = ['-f', 'lavfi', '-i', f'anoisesrc=color=pink:amplitude={0.12 if VERSION == "v2" else 1.0}:r=48000:d={dur}']
         af = ['-af', f'lowpass=f=3500,volume=0.5,afade=t=in:d=0.4,afade=t=out:st={dur-0.6}:d=0.6,aformat=channel_layouts=stereo']
     run('ffmpeg', '-y', '-framerate', str(FPS), '-i', f'{d}/%04d.jpg', *audio, *af, '-t', str(dur),
         '-c:v', 'libx264', '-crf', '16', '-pix_fmt', 'yuv420p', '-r', str(FPS), '-c:a', 'aac', '-ar', '48000', '-ac', '2', '-shortest', seg)

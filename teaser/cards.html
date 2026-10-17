@@ -87,6 +87,11 @@
   .ring { position:absolute; inset:0; border-radius:calc(var(--u)*2.4); border:calc(var(--u)*.4) solid var(--green); opacity:0; }
   .cursor { position:absolute; width:calc(var(--u)*5.5); left:48%; top:55%; filter:drop-shadow(calc(var(--u)*.3) calc(var(--u)*.4) 0 rgba(0,0,0,.45)); opacity:0; }
 
+  /* battalion logo: the file has a white background, so it sits on a white rounded plate */
+  .logoplate { background:#fff; border-radius:calc(var(--u)*2.2); padding:calc(var(--u)*.8); border:calc(var(--u)*.35) solid var(--ink);
+               box-shadow:calc(var(--u)*.6) calc(var(--u)*.6) 0 rgba(0,0,0,.45); line-height:0; }
+  .logoplate img { width:calc(var(--u)*14.5); height:calc(var(--u)*14.5); display:block; border-radius:calc(var(--u)*1.4); }
+
   /* label drawn over clips */
   .label { position:absolute; display:flex; align-items:center; gap:calc(var(--u)*1.2);
            font-weight:800; font-size:calc(var(--u)*2.1); padding:calc(var(--u)*.8) calc(var(--u)*1.8);
@@ -265,10 +270,12 @@ const CARDS = {
         <div class="btnwrap"><div id="ring" class="ring"></div><div id="btn" class="btn">היכנסו למדריך <span>←</span></div>
           <svg id="cur" class="cursor" viewBox="0 0 40 48"><path d="M4 3 L4 36 L13 28 L19 43 L27 40 L21 26 L33 25 Z" fill="#fff" stroke="#060b17" stroke-width="3.5" stroke-linejoin="round"/></svg></div>
       </div>` } ]},
-  close3: { dur:4.2, items:[
-    { s:0.0, e:4.2, keep:true, html:`<div class="big grad" style="font-size:calc(var(--u)*6.6)" data-d="0.15">יחד נשמור על</div>
-        <div class="big grad" style="font-size:calc(var(--u)*8)" data-d="0.8">רציפות תקשובית</div><div class="rule" data-d="1.5"></div>
-        <div class="small" data-d="1.8">מערך הלמידה · מחלקת קשר 951</div>` } ]},
+  close3: { dur:5.2, items:[
+    { s:0.0, e:5.2, keep:true, html:`<div class="big grad" style="font-size:calc(var(--u)*6.2)" data-d="0.15">יחד נשמור על</div>
+        <div class="big grad" style="font-size:calc(var(--u)*7.4)" data-d="0.8">רציפות תקשובית</div><div class="rule" data-d="1.5"></div>
+        <div class="logoplate" data-d="1.9"><img src="assets/logo951.png" alt="גדוד 951 חילוץ והצלה"></div>
+        <div class="small" data-d="2.4">מערך הלמידה · מחלקת קשר 951</div>` } ]},
+
   sys1: { dur:2.5, items:[ sysItem('sys1', 1, 'קשר טקטי', '(תג"מ)', 'מאנטנת מכשיר לאנטנת מכשיר') ]},
   sys2: { dur:2.5, items:[ sysItem('sys2', 2, 'RoIP', 'עמדת סמב"צית בחמ"ל', 'החמ"ל בוחר באיזה אתר להאזין') ]},
   sys3: { dur:2.5, items:[ sysItem('sys3', 3, 'ליונט', 'סלולר מגושר', 'עובד דרך הרשת הסלולרית') ]},
@@ -300,7 +307,8 @@ Object.assign(LABELS, {   /* complement the captions burned into the clips inste
   p_lio:  { c:'var(--red)',   t:'הבעיה · כל אחד על רשת אחרת' },
   s_tac:  { c:'var(--green)', t:'הפתרון · קשר טקטי (תג"מ)' },
   s_roip: { c:'var(--green)', t:'הפתרון · RoIP: הסמב"צית מעדכנת האזנה' },
-  s_lio:  { c:'var(--green)', t:'הפתרון · הליונט מדבר עם הקשר דרך המגשר' },
+  s_lio1: { c:'var(--green)', t:'הפתרון · הליונט מדבר עם הקשר דרך המגשר' },
+  s_lio2: { c:'var(--green)', t:'הפתרון · וכך הקשר והליונט נפגשים' },
 });
 const q = new URLSearchParams(location.search);
 const card = q.get('card'), fmt = q.get('fmt') || 'h', label = q.get('label');

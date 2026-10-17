@@ -42,13 +42,14 @@ if VERSION == 'v2':
     ORDER = ['intro', 'stigma', 'reveal2', 'sys1', 'tac1', 'tac2', 'sum1', 'sys2', 'roip1', 'roip2', 'sum2', 'sys3', 'lionet', 'sum3', 'close2']
     TURN_AT, PREFIX = None, ''          # music turns upbeat at 9s
 else:   # short: problem -> (bridge) -> solution, no pros/cons
-    # p_roip stops before the operator reaches for the console (~3.9s in the source) and holds the last frame for 0.5s
+    # p_roip opens at 0.2s (clean fade-in of 'Kodkod / Dochifat'), stops before the operator reaches for the console (~3.9s) and holds 0.4s
     # p_lio starts at 5.4s (the source has a dark scene transition at ~5.1-5.3s), holds its last frame 0.6s
-    # s_lio = the first part of the Lionet video: phone -> cellular cloud -> bridged site -> HQ hears
-    CLIPS = [('p_tac', F['wadi'], 5.2, 8.2, 'p_tac'), ('p_roip', F['roip1'], 2.0, 3.8, 'p_roip', 0.5), ('p_lio', F['lionet'], 5.4, 6.9, 'p_lio', 0.6),
-             ('s_tac', F['rad'], 5.2, 8.4, 's_tac'), ('s_roip', F['roip1'], 5.5, 8.5, 's_roip'), ('s_lio', F['lionet'], 0.3, 3.8, 's_lio')]
+    # s_lio1 = Lionet video, phone -> cellular cloud -> bridged site (cut before the wipe that brings in the operator, ~2.7s)
+    # s_lio2 = 'whoever is near the bridged site is connected' (bright from 7.7s; the source fades to the diagram slide after 9.8s)
+    CLIPS = [('p_tac', F['wadi'], 5.2, 8.2, 'p_tac'), ('p_roip', F['roip1'], 0.2, 3.8, 'p_roip', 0.4), ('p_lio', F['lionet'], 5.4, 6.9, 'p_lio', 0.6),
+             ('s_tac', F['rad'], 5.2, 8.4, 's_tac'), ('s_roip', F['roip1'], 5.5, 8.5, 's_roip'), ('s_lio1', F['lionet'], 0.2, 2.6, 's_lio1'), ('s_lio2', F['lionet'], 7.7, 9.8, 's_lio2', 0.5)]
     CARD_NAMES = ['intro', 'stigma3', 'reveal3', 'bridge', 'cta', 'close3']
-    ORDER = ['intro', 'stigma3', 'reveal3', 'p_tac', 'p_roip', 'p_lio', 'bridge', 's_tac', 's_roip', 's_lio', 'cta', 'close3']
+    ORDER = ['intro', 'stigma3', 'reveal3', 'p_tac', 'p_roip', 'p_lio', 'bridge', 's_tac', 's_roip', 's_lio1', 's_lio2', 'cta', 'close3']
     TURN_AT, PREFIX = 'bridge', 'short_'
 
 def run(*a):

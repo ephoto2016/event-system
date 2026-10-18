@@ -90,7 +90,7 @@
   /* battalion logo: the file has a white background, so it sits on a white rounded plate */
   .logoplate { background:#fff; border-radius:calc(var(--u)*2.2); padding:calc(var(--u)*.8); border:calc(var(--u)*.35) solid var(--ink);
                box-shadow:calc(var(--u)*.6) calc(var(--u)*.6) 0 rgba(0,0,0,.45); line-height:0; }
-  .logoplate img { width:calc(var(--u)*14.5); height:calc(var(--u)*14.5); display:block; border-radius:calc(var(--u)*1.4); }
+  .logoplate img { width:calc(var(--u)*17); height:calc(var(--u)*17); display:block; border-radius:calc(var(--u)*1.4); }
 
   /* label drawn over clips */
   .label { position:absolute; display:flex; align-items:center; gap:calc(var(--u)*1.2);
@@ -304,7 +304,7 @@ const LABELS = {
 Object.assign(LABELS, {   /* complement the captions burned into the clips instead of repeating them */
   p_tac:  { c:'var(--red)',   t:'הבעיה · קשר טקטי (תג"מ)' },
   p_roip: { c:'var(--red)',   t:'הבעיה · RoIP: הקשר שם, החמ"ל לא שומע' },
-  p_lio:  { c:'var(--red)',   t:'הבעיה · כל אחד על רשת אחרת' },
+  p_lio:  { c:'var(--red)',   t:'הבעיה · הליונט מגושר לאתר מרוחק' },
   s_tac:  { c:'var(--green)', t:'הפתרון · קשר טקטי (תג"מ)' },
   s_roip: { c:'var(--green)', t:'הפתרון · RoIP: הסמב"צית מעדכנת האזנה' },
   s_lio1: { c:'var(--green)', t:'הפתרון · הליונט מדבר עם הקשר דרך המגשר' },

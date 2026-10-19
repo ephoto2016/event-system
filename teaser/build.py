@@ -48,8 +48,8 @@ else:   # short: problem -> (bridge) -> solution, no pros/cons
     # s_lio2 = 'whoever is near the bridged site is connected' (bright from 7.7s; the source fades to the diagram slide after 9.8s)
     CLIPS = [('p_tac', F['wadi'], 5.2, 8.2, 'p_tac'), ('p_roip', F['roip1'], 0.2, 3.8, 'p_roip', 0.4), ('p_lio', F['lionet'], 5.4, 6.9, 'p_lio', 0.6),
              ('s_tac', F['rad'], 5.2, 8.4, 's_tac'), ('s_roip', F['roip1'], 5.5, 8.5, 's_roip'), ('s_lio1', F['lionet'], 0.2, 2.6, 's_lio1'), ('s_lio2', F['lionet'], 7.7, 9.8, 's_lio2', 0.5)]
-    CARD_NAMES = ['intro', 'stigma3', 'reveal3', 'bridge', 'cta', 'close3']
-    ORDER = ['intro', 'stigma3', 'reveal3', 'p_tac', 'p_roip', 'p_lio', 'bridge', 's_tac', 's_roip', 's_lio1', 's_lio2', 'cta', 'close3']
+    CARD_NAMES = ['intro', 'stigma3', 'reveal3', 'bridge', 'cta', 'punch', 'close3']
+    ORDER = ['intro', 'stigma3', 'reveal3', 'p_tac', 'p_roip', 'p_lio', 'bridge', 's_tac', 's_roip', 's_lio1', 's_lio2', 'cta', 'punch', 'close3']
     TURN_AT, PREFIX = 'bridge', 'short_'
 
 def run(*a):
@@ -121,7 +121,7 @@ def gen_music(path, dur, turn=9):
     run('ffmpeg', '-y', *ins, '-filter_complex',
         f"amix=inputs={len(parts)}:normalize=0,lowpass=f=6500,aformat=channel_layouts=stereo,afade=t=in:d=1.2,afade=t=out:st={dur-2.5}:d=2.5", path)
 
-def gen_end_sfx(path, dur, t_close):
+def gen_end_sfx(path, dur, t_close, t_crack=None):
     """Ending effect (synthesised): riser into the closing card, deep impact on the headline, short shimmer on the second line.
     Offsets are clamped with max(.,0) so exp() never overflows before the gate opens (inf*0 = NaN would poison the mix)."""
     r0, hit, chime = t_close - 1.4, t_close + 0.15, t_close + 0.8
@@ -134,12 +134,15 @@ def gen_end_sfx(path, dur, t_close):
       # chime / shimmer
       f"aevalsrc='gt(t,{chime})*exp(-2.4*{tc})*(0.22*sin(2*PI*1318.5*t)+0.16*sin(2*PI*1975.5*t)+0.09*sin(2*PI*2637*t))':s=48000:d={dur}",
     ]
+    if t_crack is not None:   # the slam when 'the disaster of the line' lands on the punchline slide
+        tk = f"max(t-{t_crack},0)"
+        parts.append(f"aevalsrc='gt(t,{t_crack})*(0.8*exp(-4*{tk})*sin(2*PI*(55*{tk}+3*(1-exp(-10*{tk}))))+0.4*exp(-30*{tk})*(random(0)*2-1))':s=48000:d={dur}")
     ins = []
     for p in parts: ins += ['-f', 'lavfi', '-i', p]
     run('ffmpeg', '-y', *ins, '-filter_complex',
-        "amix=inputs=3:normalize=0,lowpass=f=9000,aecho=0.8:0.55:140|260:0.35|0.2,aformat=channel_layouts=stereo", path)
+        f"amix=inputs={len(parts)}:normalize=0,lowpass=f=9000,aecho=0.8:0.55:140|260:0.35|0.2,aformat=channel_layouts=stereo", path)
 
-def add_music(dry, final, turn=9, t_close=None):
+def add_music(dry, final, turn=9, t_close=None, t_crack=None):
     dur = duration(dry)
     mus, sfx = MUSIC, None
     if not mus:
@@ -154,7 +157,7 @@ def add_music(dry, final, turn=9, t_close=None):
         gain, tail = MUSIC_GAIN, f"afade=t=in:d=1.0,afade=t=out:st={fo:.2f}:d={dur - fo:.2f}"
         thr, ratio = 0.015, 12
         if t_close:
-            sfx = os.path.join(WORK, 'end_sfx.wav'); gen_end_sfx(sfx, dur, t_close)
+            sfx = os.path.join(WORK, 'end_sfx.wav'); gen_end_sfx(sfx, dur, t_close, t_crack)
     # music sits under the clips' own sound (static, radio): sidechain-duck it whenever that sound plays
     fc = (f"[0:a]asplit[sc][main];[1:a]aresample=48000,aformat=channel_layouts=stereo,{head}volume={gain},{tail}[m];"
           f"[m][sc]sidechaincompress=threshold={thr}:ratio={ratio}:attack=20:release=500[d];")
@@ -187,7 +190,10 @@ async def main():
         t_close = None
         if 'close3' in ORDER:   # short version gets the ending effect, timed to the closing card
             t_close = round(sum(duration(os.path.join(WORK, f'{n}_{fmt}.mp4')) for n in ORDER[:ORDER.index('close3')]), 2)
-        add_music(dry, final, turn, t_close)
+        t_crack = None
+        if 'punch' in ORDER:    # the slam lands 1.95s into the punchline slide
+            t_crack = round(sum(duration(os.path.join(WORK, f'{n}_{fmt}.mp4')) for n in ORDER[:ORDER.index('punch')]) + 1.95, 2)
+        add_music(dry, final, turn, t_close, t_crack)
         print('done', final, flush=True)
 
 asyncio.run(main())

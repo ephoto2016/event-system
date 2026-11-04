@@ -322,6 +322,10 @@ const CARDS = {
         <div class="btnwrap"><div id="ring" class="ring"></div><div id="btn" class="btn">היכנסו למדריך <span>←</span></div>
           <svg id="cur" class="cursor" viewBox="0 0 40 48"><path d="M4 3 L4 36 L13 28 L19 43 L27 40 L21 26 L33 25 Z" fill="#fff" stroke="#060b17" stroke-width="3.5" stroke-linejoin="round"/></svg></div>
       </div>` } ]},
+  og: { dur:1, items:[   /* link-preview image (WhatsApp / social): the teaser's opening frame plus the guide's title */
+    { s:0.0, e:99, keep:true, html:`<div class="badge">מחלקת קשר 951</div>
+        <div class="big grad">מערך הלמידה</div><div class="rule"></div>
+        <div class="mid" style="font-size:calc(var(--u)*4.6)">מדריך מערכות קשר</div>${chips(0.1)}` } ]},
   punch: { dur:4.4, items:[ { s:0.0, e:4.4, scene:'punch', html:PUNCH_HTML } ]},
   close3: { dur:5.2, items:[
     { s:0.0, e:5.2, keep:true, html:`<div class="big grad" style="font-size:calc(var(--u)*6.2)" data-d="0.15">יחד נשמור על</div>

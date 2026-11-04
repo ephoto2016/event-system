@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>הדמיית מסכים</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #eef0f4;
+    --panel: #ffffff;
+    --text: #1f2430;
+    --muted: #6b7280;
+    --border: #d9dde5;
+    --accent: #2563eb;
+    --accent-soft: #e0e9ff;
+    --stage: #dfe3ea;
+    --bezel: #1b1d22;
+    --bezel-edge: #3a3d45;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14161b; --panel: #1d2027; --text: #e7e9ee; --muted: #9aa1ad;
+      --border: #2e323b; --accent: #5b8cff; --accent-soft: #233052;
+      --stage: #0f1115; --bezel: #000; --bezel-edge: #454955;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14161b; --panel: #1d2027; --text: #e7e9ee; --muted: #9aa1ad;
+    --border: #2e323b; --accent: #5b8cff; --accent-soft: #233052;
+    --stage: #0f1115; --bezel: #000; --bezel-edge: #454955;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: 'Heebo', system-ui, sans-serif;
+    background: var(--bg); color: var(--text);
+    display: flex; flex-direction: column;
+  }
+  header {
+    background: var(--panel); border-bottom: 1px solid var(--border);
+    padding: 10px 16px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  h1 { font-size: 17px; margin: 0 0 0 8px; font-weight: 700; white-space: nowrap; }
+  input[type="text"], input[type="number"], select {
+    font: inherit; font-size: 14px; color: var(--text); background: var(--bg);
+    border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px;
+  }
+  #url { flex: 1 1 280px; min-width: 0; direction: ltr; text-align: left; }
+  input[type="number"] { width: 82px; direction: ltr; }
+  button, .btn {
+    font: inherit; font-size: 14px; cursor: pointer; color: var(--text);
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 7px 12px; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;
+  }
+  button:hover, .btn:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .chip { border-radius: 999px; padding: 5px 12px; font-size: 13px; }
+  .chip small { color: var(--muted); direction: ltr; }
+  .chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 500; }
+  .chip[aria-pressed="true"] small { color: var(--accent); }
+  .group-label { font-size: 12px; color: var(--muted); margin-left: 2px; }
+  .sep { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
+  label.check { display: inline-flex; gap: 6px; align-items: center; font-size: 14px; cursor: pointer; }
+  #stage {
+    flex: 1; overflow: auto; background: var(--stage);
+    padding: 24px 16px; display: flex; flex-wrap: wrap; gap: 32px;
+    align-items: flex-start; justify-content: center; align-content: flex-start;
+  }
+  .device { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .device-label {
+    font-size: 13px; color: var(--muted); display: flex; gap: 8px; align-items: center;
+  }
+  .device-label b { color: var(--text); font-weight: 500; }
+  .device-label .dims { direction: ltr; }
+  .device-label button { padding: 2px 8px; font-size: 12px; }
+  .bezel { background: var(--bezel); border: 2px solid var(--bezel-edge); box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+  .bezel.phone  { border-radius: calc(36px * var(--s)); padding: calc(12px * var(--s)); }
+  .bezel.tablet { border-radius: calc(24px * var(--s)); padding: calc(18px * var(--s)); }
+  .bezel.desktop{ border-radius: 10px; padding: 8px 8px 22px; }
+  .bezel.none   { background: none; border: 1px dashed var(--muted); box-shadow: none; padding: 0; border-radius: 0; }
+  .screen { overflow: hidden; background: #fff; position: relative; }
+  .bezel.phone .screen  { border-radius: calc(26px * var(--s)); }
+  .bezel.tablet .screen { border-radius: calc(8px * var(--s)); }
+  .screen iframe { border: 0; transform-origin: 0 0; position: absolute; top: 0; left: 0; background: #fff; }
+  .empty {
+    margin: auto; text-align: center; color: var(--muted); max-width: 520px; line-height: 1.7;
+  }
+  .hint { font-size: 12px; color: var(--muted); }
+  .hidden { display: none !important; }
+  @media (max-width: 640px) { h1 { width: 100%; } .sep { display: none; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="row">
+    <h1>📱 הדמיית מסכים</h1>
+    <input id="url" type="text" placeholder="https://example.com או localhost:3000" autocomplete="off" spellcheck="false">
+    <button id="loadBtn" class="primary">טען</button>
+    <label class="btn" title="טעינת קובץ HTML מקומי מהמחשב">📂 קובץ
+      <input id="fileInput" type="file" accept=".html,.htm,text/html,*/*" class="hidden">
+    </label>
+    <button id="reloadBtn" title="רענון כל המסכים (R)">⟳ רענן</button>
+    <button id="openBtn" title="פתיחה בלשונית חדשה">↗</button>
+  </div>
+
+  <div class="row" id="presetRow"></div>
+
+  <div class="row">
+    <button id="rotateBtn" title="סיבוב כל המסכים (O)">⤾ עומד / שוכב</button>
+    <span class="sep"></span>
+    <span class="group-label">זום</span>
+    <select id="zoom">
+      <option value="fit">התאמה למסך</option>
+      <option value="1">100%</option>
+      <option value="0.75">75%</option>
+      <option value="0.5">50%</option>
+      <option value="0.33">33%</option>
+    </select>
+    <span class="sep"></span>
+    <label class="check"><input type="checkbox" id="multi"> כמה מכשירים יחד</label>
+    <label class="check"><input type="checkbox" id="frame" checked> מסגרת מכשיר</label>
+    <span class="sep"></span>
+    <span class="group-label">מותאם</span>
+    <input type="number" id="cw" placeholder="רוחב" min="200" max="4000">
+    <span>×</span>
+    <input type="number" id="ch" placeholder="גובה" min="200" max="4000">
+    <button id="customBtn">הוסף</button>
+  </div>
+</header>
+
+<main id="stage"></main>
+
+<script>
+(() => {
+  const PRESETS = [
+    { id: 'se',      name: 'iPhone SE',        w: 375,  h: 667,  type: 'phone' },
+    { id: 'ip15',    name: 'iPhone 15',        w: 393,  h: 852,  type: 'phone' },
+    { id: 'ip15pm',  name: 'iPhone 15 Pro Max',w: 430,  h: 932,  type: 'phone' },
+    { id: 'galaxy',  name: 'Galaxy S24',       w: 360,  h: 780,  type: 'phone' },
+    { id: 'pixel',   name: 'Pixel 8',          w: 412,  h: 915,  type: 'phone' },
+    { id: 'ipadmini',name: 'iPad Mini',        w: 768,  h: 1024, type: 'tablet' },
+    { id: 'ipadpro', name: 'iPad Pro 12.9',    w: 1024, h: 1366, type: 'tablet' },
+    { id: 'laptop',  name: 'לפטופ',            w: 1366, h: 768,  type: 'desktop' },
+    { id: 'hd',      name: 'מחשב HD',          w: 1920, h: 1080, type: 'desktop' },
+  ];
+
+  const $ = id => document.getElementById(id);
+  const stage = $('stage'), urlInput = $('url');
+
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('dp:' + k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+    set(k, v) { try { localStorage.setItem('dp:' + k, JSON.stringify(v)); } catch {} }
+  };
+
+  const state = {
+    src: '',
+    selected: store.get('selected', ['ip15']),
+    rotated: store.get('rotated', {}),        // id -> bool
+    zoom: store.get('zoom', 'fit'),
+    multi: store.get('multi', false),
+    frame: store.get('frame', true),
+    custom: store.get('custom', []),
+  };
+  let blobUrl = null;
+
+  const allDevices = () => PRESETS.concat(state.custom);
+  const byId = id => allDevices().find(d => d.id === id);
+
+  function normalizeUrl(v) {
+    v = v.trim();
+    if (!v) return '';
+    if (/^(https?:|file:|blob:|data:|about:)/i.test(v)) return v;
+    if (/^(localhost|127\.|\d+\.\d+\.\d+\.\d+)/i.test(v)) return 'http://' + v;
+    if (v.startsWith('/') || v.startsWith('./') || v.startsWith('../')) return v; // relative to this page
+    return 'https://' + v;
+  }
+
+  function save() {
+    store.set('selected', state.selected); store.set('rotated', state.rotated);
+    store.set('zoom', state.zoom); store.set('multi', state.multi);
+    store.set('frame', state.frame); store.set('custom', state.custom);
+  }
+
+  function renderPresets() {
+    const row = $('presetRow');
+    row.innerHTML = '<span class="group-label">מכשירים</span>';
+    allDevices().forEach(d => {
+      const b = document.createElement('button');
+      b.className = 'chip';
+      b.setAttribute('aria-pressed', state.selected.includes(d.id));
+      b.innerHTML = `${d.name} <small>${d.w}×${d.h}</small>`;
+      b.onclick = () => toggleDevice(d.id);
+      if (d.custom) {
+        b.oncontextmenu = e => { e.preventDefault(); removeCustom(d.id); };
+        b.title = 'קליק ימני למחיקה';
+      }
+      row.appendChild(b);
+    });
+  }
+
+  function toggleDevice(id) {
+    if (!state.multi) state.selected = [id];
+    else if (state.selected.includes(id)) {
+      if (state.selected.length > 1) state.selected = state.selected.filter(x => x !== id);
+    } else state.selected.push(id);
+    save(); renderPresets(); renderStage();
+  }
+
+  function removeCustom(id) {
+    state.custom = state.custom.filter(d => d.id !== id);
+    state.selected = state.selected.filter(x => x !== id);
+    if (!state.selected.length) state.selected = ['ip15'];
+    save(); renderPresets(); renderStage();
+  }
+
+  function dims(d) {
+    return state.rotated[d.id] ? { w: d.h, h: d.w } : { w: d.w, h: d.h };
+  }
+
+  function computeScale(list) {
+    if (state.zoom !== 'fit') return parseFloat(state.zoom);
+    const availW = stage.clientWidth - 32;
+    const availH = stage.clientHeight - 48 - 40; // label + padding
+    const pad = state.frame ? 40 : 4;
+    const maxH = Math.max(...list.map(d => dims(d).h));
+    const sumW = list.reduce((a, d) => a + dims(d).w, 0);
+    const gaps = (list.length - 1) * 32 + list.length * pad;
+    let s = Math.min(1, (availH - pad) / maxH, (availW - gaps) / sumW);
+    // too many devices to fit in one row -> fit height only, let them wrap
+    if (s < 0.3) s = Math.min(1, (availH - pad) / maxH, (availW - pad) / Math.max(...list.map(d => dims(d).w)));
+    return Math.max(0.15, s);
+  }
+
+  const placeholder = `<!doctype html><meta charset="utf-8"><body style="font-family:system-ui;display:grid;place-items:center;height:100vh;margin:0;color:#888;text-align:center;direction:rtl"><div><div style="font-size:42px">📱</div>הזינו כתובת או טענו קובץ<br><small id="v"></small></div><script>v.textContent=innerWidth+'×'+innerHeight<\/script>`;
+
+  function renderStage() {
+    const list = state.selected.map(byId).filter(Boolean);
+    const s = computeScale(list);
+    stage.innerHTML = '';
+    list.forEach(d => {
+      const { w, h } = dims(d);
+      const wrap = document.createElement('div');
+      wrap.className = 'device';
+
+      const label = document.createElement('div');
+      label.className = 'device-label';
+      label.innerHTML = `<b>${d.name}</b><span class="dims">${w}×${h}</span><span>${Math.round(s * 100)}%</span>`;
+      const rot = document.createElement('button');
+      rot.textContent = state.rotated[d.id] ? 'שוכב ⤾' : 'עומד ⤾';
+      rot.title = 'סיבוב המכשיר הזה';
+      rot.onclick = () => { state.rotated[d.id] = !state.rotated[d.id]; save(); renderStage(); };
+      label.appendChild(rot);
+
+      const bezel = document.createElement('div');
+      bezel.className = 'bezel ' + (state.frame ? d.type : 'none');
+      bezel.style.setProperty('--s', s);
+
+      const screen = document.createElement('div');
+      screen.className = 'screen';
+      screen.style.width = w * s + 'px';
+      screen.style.height = h * s + 'px';
+
+      const iframe = document.createElement('iframe');
+      iframe.width = w; iframe.height = h;
+      iframe.style.width = w + 'px'; iframe.style.height = h + 'px';
+      iframe.style.transform = `scale(${s})`;
+      iframe.setAttribute('allow', 'clipboard-read; clipboard-write; geolocation; camera; microphone; fullscreen');
+      if (state.src) iframe.src = state.src; else iframe.srcdoc = placeholder;
+
+      screen.appendChild(iframe);
+      bezel.appendChild(screen);
+      wrap.append(label, bezel);
+      stage.appendChild(wrap);
+    });
+  }
+
+  function load(src) {
+    state.src = src;
+    try {
+      const u = new URL(location.href);
+      if (src && !src.startsWith('blob:')) u.searchParams.set('url', src); else u.searchParams.delete('url');
+      history.replaceState(null, '', u);
+    } catch {}
+    if (src && !src.startsWith('blob:')) store.set('url', src);
+    renderStage();
+  }
+
+  // ---- wiring ----
+  $('loadBtn').onclick = () => load(normalizeUrl(urlInput.value));
+  urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') $('loadBtn').click(); });
+
+  $('fileInput').onchange = e => {
+    const f = e.target.files[0]; if (!f) return;
+    if (blobUrl) URL.revokeObjectURL(blobUrl);
+    blobUrl = URL.createObjectURL(new Blob([f], { type: 'text/html' }));
+    urlInput.value = '📂 ' + f.name;
+    load(blobUrl);
+    e.target.value = '';
+  };
+
+  $('reloadBtn').onclick = () => renderStage();
+  $('openBtn').onclick = () => { if (state.src) window.open(state.src, '_blank'); };
+
+  $('rotateBtn').onclick = () => {
+    const anyPortrait = state.selected.some(id => !state.rotated[id]);
+    state.selected.forEach(id => state.rotated[id] = anyPortrait);
+    save(); renderStage();
+  };
+
+  const zoomSel = $('zoom');
+  zoomSel.value = state.zoom;
+  zoomSel.onchange = () => { state.zoom = zoomSel.value; save(); renderStage(); };
+
+  const multi = $('multi');
+  multi.checked = state.multi;
+  multi.onchange = () => {
+    state.multi = multi.checked;
+    if (!state.multi) state.selected = state.selected.slice(0, 1);
+    save(); renderPresets(); renderStage();
+  };
+
+  const frame = $('frame');
+  frame.checked = state.frame;
+  frame.onchange = () => { state.frame = frame.checked; save(); renderStage(); };
+
+  $('customBtn').onclick = () => {
+    const w = parseInt($('cw').value, 10), h = parseInt($('ch').value, 10);
+    if (!(w >= 200 && h >= 200)) { alert('יש להזין רוחב וגובה (לפחות 200)'); return; }
+    const id = 'c' + w + 'x' + h;
+    if (!byId(id)) state.custom.push({ id, name: 'מותאם', w, h, type: w > h ? 'desktop' : w < 600 ? 'phone' : 'tablet', custom: true });
+    if (state.multi) { if (!state.selected.includes(id)) state.selected.push(id); } else state.selected = [id];
+    save(); renderPresets(); renderStage();
+  };
+
+  document.addEventListener('keydown', e => {
+    if (e.target.matches('input, select, textarea')) return;
+    if (e.key === 'r' || e.key === 'R') renderStage();
+    if (e.key === 'o' || e.key === 'O') $('rotateBtn').click();
+  });
+
+  let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(renderStage, 120); });
+
+  // initial
+  state.selected = state.selected.filter(byId);
+  if (!state.selected.length) state.selected = ['ip15'];
+  const initial = new URLSearchParams(location.search).get('url') || store.get('url', '');
+  urlInput.value = initial;
+  renderPresets();
+  load(initial);
+})();
+</script>
+</body>
+</html>

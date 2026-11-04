@@ -239,6 +239,22 @@
         .summary-list li strong { color: var(--text-main); display: block; font-size: 1.2rem; margin-bottom: 6px; font-family: 'Heebo', sans-serif; }
         .summary-list li p { color: var(--text-muted); margin: 0; }
 
+        .summary-list li p.rec { margin-top: 10px; color: var(--text-main); }
+        .rec-l { font-weight: 800; color: var(--secondary); }
+
+        /* ---------- share block ---------- */
+        .share-section { margin-top: 32px; background: var(--surface); border: 1px solid var(--card-border); border-radius: 20px; padding: clamp(16px, 4vw, 32px); box-shadow: var(--shadow); text-align: center; }
+        .share-section .section-title { justify-content: center; border: 0; padding: 0; margin-bottom: 10px; }
+        .share-section p.lead { color: var(--text-muted); max-width: 620px; margin: 0 auto 18px; }
+        .share-actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: center; }
+        .wa-btn { min-height: 52px; padding: 0 26px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; border: 0; border-radius: 14px;
+                  background: #25d366; color: #062b14; font: 800 1.1rem 'Heebo', 'Assistant', sans-serif; box-shadow: 0 6px 18px rgba(37, 211, 102, 0.3); }
+        .wa-btn:hover { filter: brightness(1.05); } .wa-btn[disabled] { opacity: .7; cursor: progress; }
+        .wa-btn .ic { font-size: 1.5rem; }
+        .dl-link { min-height: 44px; display: inline-flex; align-items: center; gap: 8px; padding: 0 16px; color: var(--text-main); text-decoration: none; font-weight: 700; border: 1px solid var(--card-border); border-radius: 12px; }
+        .dl-link:hover { border-color: var(--secondary); }
+        .share-msg { min-height: 1.4em; margin-top: 10px; color: var(--text-muted); font-size: 0.95rem; }
+
         footer { text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-top: 32px; }
 
         /* ---------- phones held upright: text gets (almost) the whole screen width, like it does sideways ---------- */
@@ -472,24 +488,37 @@
                     <svg class="ic" aria-hidden="true"><use href="#i-shield-halved"/></svg>
                     <div>
                         <strong>1. אין קסמים – יש גיבוי</strong>
-                        <p>מכשיר הליונט מספק נוחות מדהימה ואשליית פשטות, אך אינו חסין מתקלות תשתית וסלולר ואינו מחליף את רשת הקשר. <em>ההמלצה: כוח שיוצא לפעילות לעולם לא יסתמך על ליונט בלבד – תמיד יהיה מכשיר תג"מ גיבוי פתוח וזמין.</em></p>
+                        <p>מכשיר הליונט מספק נוחות מדהימה ואשליית פשטות, אך אינו חסין מתקלות תשתית וסלולר ואינו מחליף את רשת הקשר.</p>
+                        <p class="rec"><span class="rec-l">ההמלצה:</span> כוח שיוצא לפעילות לעולם לא יסתמך על ליונט בלבד – תמיד יהיה מכשיר תג"מ גיבוי פתוח וזמין.</p>
                     </div>
                 </li>
                 <li>
                     <svg class="ic" aria-hidden="true"><use href="#i-headset"/></svg>
                     <div>
                         <strong>2. הדרכת סמב"ציות היא קריטית (<bdi dir="ltr">RoIP</bdi>)</strong>
-                        <p>מערכת ה-RoIP חכמה בדיוק כפי שהסמב"צית מפעילה אותה. <em>ההמלצה: לתרגל את החמ"ל במעבר מהיר בין אתרים תחת עומס ואירועי קיצון, ולוודא היכרות מוחלטת עם מפת הכיסוי של כל אתר קשר בגזרה.</em></p>
+                        <p>מערכת ה-RoIP חכמה בדיוק כפי שהסמב"צית מפעילה אותה.</p>
+                        <p class="rec"><span class="rec-l">ההמלצה:</span> לתרגל את החמ"ל במעבר מהיר בין אתרים תחת עומס ואירועי קיצון, ולוודא היכרות מוחלטת עם מפת הכיסוי של כל אתר קשר בגזרה.</p>
                     </div>
                 </li>
                 <li>
                     <svg class="ic" aria-hidden="true"><use href="#i-lightbulb"/></svg>
                     <div>
                         <strong>3. הבנת התווך ומניעת תסכול (חינוך המשתמש)</strong>
-                        <p>לוחמים, מפקדים ורכזי ביטחון שוטף חייבים להבין את אופן פעולת הגישור. <em>ההמלצה: להטמיע את המושג "מלכודת המגשר" בקרב מחזיקי הליונט כדי שיבינו מדוע קרבה פיזית אינה ערובה לקשר, ומתי יש לעבור לאמצעי תקשורת אחר.</em></p>
+                        <p>לוחמים, מפקדים ורכזי ביטחון שוטף חייבים להבין את אופן פעולת הגישור.</p>
+                        <p class="rec"><span class="rec-l">ההמלצה:</span> להטמיע את המושג "מלכודת המגשר" בקרב מחזיקי הליונט כדי שיבינו מדוע קרבה פיזית אינה ערובה לקשר, ומתי יש לעבור לאמצעי תקשורת אחר.</p>
                     </div>
                 </li>
             </ul>
+        </section>
+
+        <section class="share-section" id="share" aria-labelledby="share-title">
+            <h2 class="section-title" id="share-title"><svg class="ic" aria-hidden="true"><use href="#i-share-nodes"/></svg> הפיצו הלאה</h2>
+            <p class="lead">סיימתם? שלחו לחבר או למפקד הודעה מוכנה: טיזר קצר של כדקה וקישור למדריך המלא.</p>
+            <div class="share-actions">
+                <button type="button" class="wa-btn" id="waShare"><svg class="ic" aria-hidden="true"><use href="#i-whatsapp"/></svg><span>שיתוף בוואטסאפ</span></button>
+                <a class="dl-link" href="video/teaser-9x16.mp4" download="kesher-teaser.mp4"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> הורדת הטיזר</a>
+            </div>
+            <p class="share-msg" id="shareMsg" role="status" aria-live="polite"></p>
         </section>
 
         <footer>מערך הלמידה · מחלקת קשר 951</footer>
@@ -546,6 +575,37 @@
                 v.addEventListener('play', function () { videos.forEach(function (o) { if (o !== v && !o.paused) o.pause(); }); });
                 if (fs) fs.addEventListener('click', function () { enterFullscreen(v); });
             });
+
+            /* ---------- WhatsApp share: video + text + link (Web Share API); fallback: wa.me with text + link ---------- */
+            var SHARE_URL = 'https://kesher.emanuelphoto.co.il/';
+            var SHARE_TEXT = 'מערך הלמידה של מחלקת קשר 951: מדריך מערכות קשר.\nתג"מ, RoIP וליונט: מה ההבדלים, מתי משתמשים בכל אחד, ואיך נמנעים ממלכודת המגשר.\nכדאי לראות:';
+            var SHARE_VIDEO = 'video/teaser-9x16.mp4';
+            var waBtn = document.getElementById('waShare'), msg = document.getElementById('shareMsg'), fileP = null;
+            function say(t) { msg.textContent = t || ''; }
+            function wantsFileShare() { return !!(navigator.share && navigator.canShare); }
+            function prefetchVideo() {            /* starts when the share block comes into view, so the click can share immediately */
+                if (fileP || !wantsFileShare() || (navigator.connection && navigator.connection.saveData)) return;
+                fileP = fetch(SHARE_VIDEO).then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.blob(); })
+                    .then(function (b) { return new File([b], 'kesher-teaser.mp4', { type: 'video/mp4' }); })
+                    .catch(function () { fileP = null; return null; });
+            }
+            function openWa() { window.open('https://wa.me/?text=' + encodeURIComponent(SHARE_TEXT + '\n' + SHARE_URL), '_blank', 'noopener'); }
+            waBtn.addEventListener('click', function () {
+                if (!wantsFileShare()) { openWa(); return; }
+                prefetchVideo(); waBtn.disabled = true; say('מכין את הסרטון…');
+                (fileP || Promise.resolve(null)).then(function (file) {
+                    var data = file ? { files: [file], text: SHARE_TEXT + '\n' + SHARE_URL } : null;
+                    if (!data || !navigator.canShare(data)) { say(''); openWa(); return; }
+                    return navigator.share(data).then(function () { say(''); });
+                }).catch(function (e) {
+                    if (e && e.name === 'AbortError') { say(''); return; }          /* the user closed the share sheet */
+                    say('השיתוף עם הסרטון לא זמין כרגע, פותח הודעה עם הקישור'); openWa();
+                }).then(function () { waBtn.disabled = false; });
+            });
+            if ('IntersectionObserver' in window) {
+                var so = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { prefetchVideo(); so.disconnect(); } }, { rootMargin: '200px' });
+                so.observe(document.getElementById('share'));
+            }
 
             /* ---------- highlight the section being read in the top bar ---------- */
             if ('IntersectionObserver' in window) {

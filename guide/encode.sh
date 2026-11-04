@@ -13,3 +13,8 @@ enc tactical-2-valley     '*-___2-____.mp4'      6.5
 enc roip-1-routing        '*955578fc-2.mp4'      6.5
 enc roip-2-site-choice    '*-2-___2-_____-___.mp4' 6
 enc lionet                '*0cef14dc-3.mp4'      1
+
+# optional: the shareable vertical teaser (second argument = the 9:16 teaser, e.g. teaser/out/teaser_short_9x16.mp4)
+if [ -n "${2:-}" ]; then
+  ffmpeg -v error -y -i "$2" -vf "scale=720:-2" -c:v libx264 -crf 27 -preset slow -pix_fmt yuv420p -c:a aac -b:a 112k -movflags +faststart "$OUT/teaser-9x16.mp4"
+fi

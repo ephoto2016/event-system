@@ -244,7 +244,7 @@
 
         /* ---------- share block ---------- */
         .share-section { margin-top: 32px; background: var(--surface); border: 1px solid var(--card-border); border-radius: 20px; padding: clamp(16px, 4vw, 32px); box-shadow: var(--shadow); text-align: center; }
-        .share-section .section-title { justify-content: center; border: 0; padding: 0; margin-bottom: 10px; }
+        .share-section .section-title { justify-content: center; border: 0; padding: 0; margin-bottom: 10px; text-wrap: balance; }
         .share-section p.lead { color: var(--text-muted); max-width: 620px; margin: 0 auto 18px; }
         .share-actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: center; }
         .wa-btn { min-height: 52px; padding: 0 26px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; border: 0; border-radius: 14px;
@@ -254,6 +254,7 @@
         .dl-link { min-height: 44px; display: inline-flex; align-items: center; gap: 8px; padding: 0 16px; color: var(--text-main); text-decoration: none; font-weight: 700; border: 1px solid var(--card-border); border-radius: 12px; }
         .dl-link:hover { border-color: var(--secondary); }
         .share-msg { min-height: 1.4em; margin-top: 10px; color: var(--text-muted); font-size: 0.95rem; }
+        .share-msg.ok { color: var(--primary); font-weight: 800; font-size: 1.05rem; }
 
         footer { text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-top: 32px; }
 
@@ -512,10 +513,10 @@
         </section>
 
         <section class="share-section" id="share" aria-labelledby="share-title">
-            <h2 class="section-title" id="share-title"><svg class="ic" aria-hidden="true"><use href="#i-share-nodes"/></svg> הפיצו הלאה</h2>
-            <p class="lead">סיימתם? שלחו לחבר או למפקד הודעה מוכנה: טיזר קצר של כדקה וקישור למדריך המלא.</p>
+            <h2 class="section-title" id="share-title"><svg class="ic" aria-hidden="true"><use href="#i-share-nodes"/></svg> נהנית? אל תשמור את זה לעצמך 💬</h2>
+            <p class="lead">יש מישהו שעוד נתקע במלכודת הליונט? אל תתנו לו לגלות את זה בשטח.</p>
             <div class="share-actions">
-                <button type="button" class="wa-btn" id="waShare"><svg class="ic" aria-hidden="true"><use href="#i-whatsapp"/></svg><span>שיתוף בוואטסאפ</span></button>
+                <button type="button" class="wa-btn" id="waShare"><svg class="ic" aria-hidden="true"><use href="#i-whatsapp"/></svg><span>שלחו לחבר בוואטסאפ</span></button>
                 <a class="dl-link" href="video/teaser-9x16.mp4" download="kesher-teaser.mp4"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> הורדת הטיזר</a>
             </div>
             <p class="share-msg" id="shareMsg" role="status" aria-live="polite"></p>
@@ -578,10 +579,15 @@
 
             /* ---------- WhatsApp share: video + text + link (Web Share API); fallback: wa.me with text + link ---------- */
             var SHARE_URL = 'https://kesher.emanuelphoto.co.il/';
-            var SHARE_TEXT = 'מערך הלמידה של מחלקת קשר 951: מדריך מערכות קשר.\nתג"מ, RoIP וליונט: מה ההבדלים, מתי משתמשים בכל אחד, ואיך נמנעים ממלכודת המגשר.\nכדאי לראות:';
+            var SHARE_TEXT = '🤔 *למה הקשר "לא עובד" גם כשהמכשיר תקין?*\nולמה ליונט וקשר טקטי לא שומעים זה את זה, גם במרחק של מטר?\n\n'
+                + 'התשובות כאן, בסרטונים קצרים ובשפה פשוטה 👇\n🔗 {URL}\n\n'
+                + '_הליונט הוא המצאת המאה… אך גם האסון של הקו_ 😉\n\n'
+                + 'יחד נשמור על *רציפות תקשובית* 🤝';
+            var SHARE_THANKS = 'תודה ששיתפת! ככה שומרים על רציפות תקשובית 🤝';
             var SHARE_VIDEO = 'video/teaser-9x16.mp4';
             var waBtn = document.getElementById('waShare'), msg = document.getElementById('shareMsg'), fileP = null;
-            function say(t) { msg.textContent = t || ''; }
+            function fullText() { return SHARE_TEXT.replace('{URL}', SHARE_URL); }
+            function say(t, ok) { msg.textContent = t || ''; msg.classList.toggle('ok', !!ok); }
             function wantsFileShare() { return !!(navigator.share && navigator.canShare); }
             function prefetchVideo() {            /* starts when the share block comes into view, so the click can share immediately */
                 if (fileP || !wantsFileShare() || (navigator.connection && navigator.connection.saveData)) return;
@@ -589,14 +595,14 @@
                     .then(function (b) { return new File([b], 'kesher-teaser.mp4', { type: 'video/mp4' }); })
                     .catch(function () { fileP = null; return null; });
             }
-            function openWa() { window.open('https://wa.me/?text=' + encodeURIComponent(SHARE_TEXT + '\n' + SHARE_URL), '_blank', 'noopener'); }
+            function openWa() { window.open('https://wa.me/?text=' + encodeURIComponent(fullText()), '_blank', 'noopener'); }
             waBtn.addEventListener('click', function () {
-                if (!wantsFileShare()) { openWa(); return; }
+                if (!wantsFileShare()) { openWa(); say(SHARE_THANKS, true); return; }
                 prefetchVideo(); waBtn.disabled = true; say('מכין את הסרטון…');
                 (fileP || Promise.resolve(null)).then(function (file) {
-                    var data = file ? { files: [file], text: SHARE_TEXT + '\n' + SHARE_URL } : null;
-                    if (!data || !navigator.canShare(data)) { say(''); openWa(); return; }
-                    return navigator.share(data).then(function () { say(''); });
+                    var data = file ? { files: [file], text: fullText() } : null;
+                    if (!data || !navigator.canShare(data)) { openWa(); say(SHARE_THANKS, true); return; }
+                    return navigator.share(data).then(function () { say(SHARE_THANKS, true); });
                 }).catch(function (e) {
                     if (e && e.name === 'AbortError') { say(''); return; }          /* the user closed the share sheet */
                     say('השיתוף עם הסרטון לא זמין כרגע, פותח הודעה עם הקישור'); openWa();

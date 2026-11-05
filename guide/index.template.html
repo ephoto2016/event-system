@@ -256,7 +256,16 @@
         .share-msg { min-height: 1.4em; margin-top: 10px; color: var(--text-muted); font-size: 0.95rem; }
         .share-msg.ok { color: var(--primary); font-weight: 800; font-size: 1.05rem; }
 
-        footer { text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-top: 32px; }
+        .site-footer { text-align: center; color: var(--text-muted); font-size: 0.95rem; margin-top: 36px; padding-top: 22px; border-top: 1px solid var(--card-border); display: grid; justify-items: center; gap: 10px; }
+        .site-footer p { margin: 0; }
+        .foot-unit { font-weight: 700; color: var(--text-main); }
+        .foot-logo { width: 56px; height: 56px; background: #fff; border-radius: 14px; padding: 4px; }
+        .foot-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+        .contact-btn, .contact-link { min-height: 44px; display: inline-flex; align-items: center; gap: 8px; padding: 0 16px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 0.95rem; }
+        .contact-btn { background: #25d366; color: #062b14; }
+        .contact-link { color: var(--text-main); border: 1px solid var(--card-border); }
+        .contact-btn:hover { filter: brightness(1.05); } .contact-link:hover { border-color: var(--secondary); }
+        .foot-priv { font-size: 0.8rem; opacity: .8; }
 
         /* ---------- phones held upright: text gets (almost) the whole screen width, like it does sideways ---------- */
         @media (max-width: 799px) {
@@ -290,13 +299,13 @@
     <div class="topbar">
         <div class="topbar-inner">
             <nav class="topnav" aria-label="ניווט בדף">
-                <a href="#compare">השוואה</a>
-                <a href="#tactical">תג"מ</a>
-                <a href="#roip">RoIP</a>
-                <a href="#lionet">ליונט</a>
-                <a href="#summary">סיכום</a>
+                <a data-track="nav" href="#compare">השוואה</a>
+                <a data-track="nav" href="#tactical">תג"מ</a>
+                <a data-track="nav" href="#roip">RoIP</a>
+                <a data-track="nav" href="#lionet">ליונט</a>
+                <a data-track="nav" href="#summary">סיכום</a>
             </nav>
-            <button type="button" class="theme-btn" id="themeBtn" aria-pressed="false" aria-label="החלפת תצוגה כהה/בהירה">
+            <button type="button" class="theme-btn" id="themeBtn" data-track="theme" aria-pressed="false" aria-label="החלפת תצוגה כהה/בהירה">
                 <svg class="ic" aria-hidden="true"><use href="#i-circle-half-stroke"/></svg><span class="lbl">תצוגה בהירה</span>
             </button>
         </div>
@@ -412,8 +421,8 @@
             <article class="card" id="tactical">
                 <div class="player">
                     <div class="plist" role="group" aria-label="חלקי הסרטון: קשר טקטי">
-                        <button type="button" class="pbtn active" aria-pressed="true" data-src="video/tactical-1-radius.mp4" data-poster="video/posters/tactical-1-radius.jpg">חלק 1 · הרדיוס</button>
-                        <button type="button" class="pbtn" aria-pressed="false" data-src="video/tactical-2-valley.mp4" data-poster="video/posters/tactical-2-valley.jpg">חלק 2 · הוואדי</button>
+                        <button type="button" data-track="part" class="pbtn active" aria-pressed="true" data-src="video/tactical-1-radius.mp4" data-poster="video/posters/tactical-1-radius.jpg">חלק 1 · הרדיוס</button>
+                        <button type="button" data-track="part" class="pbtn" aria-pressed="false" data-src="video/tactical-2-valley.mp4" data-poster="video/posters/tactical-2-valley.jpg">חלק 2 · הוואדי</button>
                     </div>
                     <div class="vwrap"><video controls playsinline preload="none" poster="video/posters/tactical-1-radius.jpg" src="video/tactical-1-radius.mp4" aria-label="סרטון הדרכה: קשר טקטי"></video></div>
                     <div class="vbar">
@@ -437,8 +446,8 @@
             <article class="card roip" id="roip">
                 <div class="player">
                     <div class="plist" role="group" aria-label="חלקי הסרטון: RoIP">
-                        <button type="button" class="pbtn active" aria-pressed="true" data-src="video/roip-1-routing.mp4" data-poster="video/posters/roip-1-routing.jpg">חלק 1 · ניתוב ידני</button>
-                        <button type="button" class="pbtn" aria-pressed="false" data-src="video/roip-2-site-choice.mp4" data-poster="video/posters/roip-2-site-choice.jpg">חלק 2 · מעבר אתרים בין כוחות</button>
+                        <button type="button" data-track="part" class="pbtn active" aria-pressed="true" data-src="video/roip-1-routing.mp4" data-poster="video/posters/roip-1-routing.jpg">חלק 1 · ניתוב ידני</button>
+                        <button type="button" data-track="part" class="pbtn" aria-pressed="false" data-src="video/roip-2-site-choice.mp4" data-poster="video/posters/roip-2-site-choice.jpg">חלק 2 · מעבר אתרים בין כוחות</button>
                     </div>
                     <div class="vwrap"><video controls playsinline preload="none" poster="video/posters/roip-1-routing.jpg" src="video/roip-1-routing.mp4" aria-label="סרטון הדרכה: RoIP בחמ&quot;ל"></video></div>
                     <div class="vbar">
@@ -516,15 +525,26 @@
             <h2 class="section-title" id="share-title"><svg class="ic" aria-hidden="true"><use href="#i-share-nodes"/></svg> נהנית? אל תשמור את זה לעצמך 💬</h2>
             <p class="lead">יש מישהו שעוד נתקע במלכודת הליונט? אל תתנו לו לגלות את זה בשטח.</p>
             <div class="share-actions">
-                <button type="button" class="wa-btn" id="waShare"><svg class="ic" aria-hidden="true"><use href="#i-whatsapp"/></svg><span>שלחו לחבר בוואטסאפ</span></button>
-                <a class="dl-link" href="video/teaser-9x16.mp4" download="kesher-teaser.mp4"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> הורדת הטיזר</a>
+                <button type="button" class="wa-btn" id="waShare" data-track="share_click"><svg class="ic" aria-hidden="true"><use href="#i-whatsapp"/></svg><span>שלחו לחבר בוואטסאפ</span></button>
+                <a class="dl-link" data-track="teaser_download" href="video/teaser-9x16.mp4" download="kesher-teaser.mp4"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> הורדת הטיזר</a>
             </div>
             <p class="share-msg" id="shareMsg" role="status" aria-live="polite"></p>
         </section>
 
-        <footer>מערך הלמידה · מחלקת קשר 951</footer>
+        <footer class="site-footer">
+            <p class="foot-unit">מערך הלמידה · מחלקת קשר 951</p>
+            <img class="foot-logo" src="assets/logo-180.png" width="56" height="56" alt="גדוד 951 חילוץ והצלה">
+            <p class="foot-contact">יש הערה, שאלה או רעיון לשיפור? <strong>עמנואל מימון</strong></p>
+            <div class="foot-actions">
+                <a class="contact-btn" data-track="contact_wa" data-track-label="whatsapp" target="_blank" rel="noopener"
+                   href="https://wa.me/972523003396?text=%D7%94%D7%99%D7%99%20%D7%A2%D7%9E%D7%A0%D7%95%D7%90%D7%9C%2C%20%D7%A8%D7%90%D7%99%D7%AA%D7%99%20%D7%90%D7%AA%20%D7%9E%D7%93%D7%A8%D7%99%D7%9A%20%D7%9E%D7%A2%D7%A8%D7%9B%D7%95%D7%AA%20%D7%94%D7%A7%D7%A9%D7%A8.%20%D7%94%D7%A2%D7%A8%D7%94%2F%D7%A9%D7%90%D7%9C%D7%94%3A%20"><svg class="ic" aria-hidden="true"><use href="#i-whatsapp"/></svg> שלחו לי הודעה</a>
+                <a class="contact-link" data-track="contact_call" data-track-label="call" href="tel:+972523003396"><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg> התקשרו</a>
+            </div>
+            <p class="foot-priv">הדף מודד צפיות באופן אנונימי, ללא עוגיות וללא שמירת כתובת IP.</p>
+        </footer>
     </main>
 
+    <script src="assets/track.js" defer></script>
     <script>
         (function () {
             /* ---------- theme switch (saved on the device) ---------- */
@@ -578,7 +598,7 @@
             });
 
             /* ---------- WhatsApp share: video + text + link (Web Share API); fallback: wa.me with text + link ---------- */
-            var SHARE_URL = 'https://kesher.emanuelphoto.co.il/';
+            var SHARE_URL = 'https://kesher.emanuelphoto.co.il/?src=share';
             var SHARE_TEXT = '🤔 *למה הקשר "לא עובד" גם כשהמכשיר תקין?*\nולמה ליונט וקשר טקטי לא שומעים זה את זה, גם במרחק של מטר?\n\n'
                 + 'התשובות כאן, בסרטונים קצרים ובשפה פשוטה 👇\n🔗 {URL}\n\n'
                 + '_הליונט הוא המצאת המאה… אך גם האסון של הקו_ 😉\n\n'
@@ -587,6 +607,7 @@
             var SHARE_VIDEO = 'video/teaser-9x16.mp4';
             var waBtn = document.getElementById('waShare'), msg = document.getElementById('shareMsg'), fileP = null;
             function fullText() { return SHARE_TEXT.replace('{URL}', SHARE_URL); }
+            function trk(a, b) { if (window.kTrack) window.kTrack(a, b); }
             function say(t, ok) { msg.textContent = t || ''; msg.classList.toggle('ok', !!ok); }
             function wantsFileShare() { return !!(navigator.share && navigator.canShare); }
             function prefetchVideo() {            /* starts when the share block comes into view, so the click can share immediately */
@@ -597,15 +618,15 @@
             }
             function openWa() { window.open('https://wa.me/?text=' + encodeURIComponent(fullText()), '_blank', 'noopener'); }
             waBtn.addEventListener('click', function () {
-                if (!wantsFileShare()) { openWa(); say(SHARE_THANKS, true); return; }
+                if (!wantsFileShare()) { openWa(); trk('share_wa'); say(SHARE_THANKS, true); return; }
                 prefetchVideo(); waBtn.disabled = true; say('מכין את הסרטון…');
                 (fileP || Promise.resolve(null)).then(function (file) {
                     var data = file ? { files: [file], text: fullText() } : null;
-                    if (!data || !navigator.canShare(data)) { openWa(); say(SHARE_THANKS, true); return; }
-                    return navigator.share(data).then(function () { say(SHARE_THANKS, true); });
+                    if (!data || !navigator.canShare(data)) { openWa(); trk('share_wa'); say(SHARE_THANKS, true); return; }
+                    return navigator.share(data).then(function () { trk('share_done'); say(SHARE_THANKS, true); });
                 }).catch(function (e) {
-                    if (e && e.name === 'AbortError') { say(''); return; }          /* the user closed the share sheet */
-                    say('השיתוף עם הסרטון לא זמין כרגע, פותח הודעה עם הקישור'); openWa();
+                    if (e && e.name === 'AbortError') { trk('share_cancel'); say(''); return; }          /* the user closed the share sheet */
+                    trk('share_fail'); say('השיתוף עם הסרטון לא זמין כרגע, פותח הודעה עם הקישור'); openWa(); trk('share_wa');
                 }).then(function () { waBtn.disabled = false; });
             });
             if ('IntersectionObserver' in window) {

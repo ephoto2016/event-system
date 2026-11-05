@@ -1,10 +1,13 @@
 /* Anonymous first-party page statistics. No cookies, no IP stored, no third parties.
-   Events go to collect.php on the same site; if it is missing or offline this script silently does nothing. */
+   Events go to the statistics Worker (see the stats-endpoint meta tag); if it is not set or is offline this script silently does nothing. */
 (function () {
     'use strict';
-    var ENDPOINT = 'collect.php';
+    /* where events are sent: the Cloudflare Worker address, set once in index.html: <meta name="stats-endpoint" content="https://.../collect"> */
+    var meta = document.querySelector('meta[name="stats-endpoint"]');
+    var ENDPOINT = (meta && meta.getAttribute('content')) || '';
     var noop = function () {};
     window.kTrack = noop;
+    if (!ENDPOINT) return;
     try { if (navigator.doNotTrack === '1' || window.doNotTrack === '1') return; } catch (e) {}
     if (location.protocol !== 'http:' && location.protocol !== 'https:') return;   /* e.g. opened as a local file */
 
@@ -31,7 +34,7 @@
             if (first) {   /* the first request uses fetch so a missing collector (404) switches tracking off */
                 first = false;
                 fetch(ENDPOINT, { method: 'POST', body: body, keepalive: true, headers: { 'Content-Type': 'text/plain' } })
-                    .then(function (r) { if (r.status === 404 || r.status === 405 || r.status >= 500) dead = true; }, function () { dead = true; });
+                    .then(function (r) { if (r.status === 404 || r.status === 405 || r.status >= 500) dead = true; }, function () { dead = true; });   /* cross-origin: needs the CORS header the Worker sends */
                 return;
             }
             if (navigator.sendBeacon && navigator.sendBeacon(ENDPOINT, new Blob([body], { type: 'text/plain' }))) return;

@@ -1,0 +1,15 @@
+# Optional: only if you deploy the statistics Worker from the command line (npx wrangler deploy).
+# The dashboard route in the README (Workers & Pages -> Create) needs none of this.
+name = "kesher-stats"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+[vars]
+SITE_ORIGIN = "https://kesher.emanuelphoto.co.il"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "kesher-stats"
+database_id = "PUT-THE-D1-DATABASE-ID-HERE"
+
+# Secrets (not in this file):  npx wrangler secret put ADMIN_PASSWORD   and   npx wrangler secret put SALT

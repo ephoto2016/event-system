@@ -70,7 +70,8 @@
   }
   .device { display: flex; flex-direction: column; align-items: center; gap: 8px; }
   .device-label {
-    font-size: 13px; color: var(--muted); display: flex; gap: 8px; align-items: center;
+    font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 4px 8px; align-items: center; max-width: 100%; text-align: center;
   }
   .device-label b { color: var(--text); font-weight: 500; }
   .device-label .dims { direction: ltr; }
@@ -89,6 +90,16 @@
   }
   .hint { font-size: 12px; color: var(--muted); }
   .hidden { display: none !important; }
+  .badge { font-size: 11px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--border); }
+  .badge.on  { color: #15803d; border-color: #86efac; background: rgba(34,197,94,.1); }
+  .badge.off { color: #b45309; border-color: #fcd34d; background: rgba(245,158,11,.1); cursor: help; }
+  .device.leader .bezel { box-shadow: 0 0 0 3px var(--accent), 0 10px 30px rgba(0,0,0,.25); }
+  #toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: #1f2430; color: #fff; padding: 10px 18px; border-radius: 10px; font-size: 14px;
+    opacity: 0; pointer-events: none; transition: .25s; z-index: 10; max-width: calc(100% - 32px); text-align: center;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   @media (max-width: 640px) { h1 { width: 100%; } .sep { display: none; } }
 </style>
 </head>
@@ -108,6 +119,7 @@
   <div class="row" id="presetRow"></div>
 
   <div class="row">
+    <button id="commonBtn" class="primary" title="טלפון עומד, טלפון שוכב, אייפד ומסך מחשב">⊞ 4 מכשירים נפוצים</button>
     <button id="rotateBtn" title="סיבוב כל המסכים (O)">⤾ עומד / שוכב</button>
     <span class="sep"></span>
     <span class="group-label">זום</span>
@@ -121,6 +133,8 @@
     <span class="sep"></span>
     <label class="check"><input type="checkbox" id="multi"> כמה מכשירים יחד</label>
     <label class="check"><input type="checkbox" id="frame" checked> מסגרת מכשיר</label>
+    <label class="check" title="ניווט, לחיצות, הקלדה וגלילה במסך אחד משתקפים בכל המסכים"><input type="checkbox" id="sync" checked> 🔗 סנכרון מסכים</label>
+    <button id="snippetBtn" title="לאתרים בדומיין אחר: העתקת קוד להדבקה בדף הנבדק">📋 קוד סנכרון</button>
     <span class="sep"></span>
     <span class="group-label">מותאם</span>
     <input type="number" id="cw" placeholder="רוחב" min="200" max="4000">
@@ -131,8 +145,122 @@
 </header>
 
 <main id="stage"></main>
+<div id="toast" role="status"></div>
+
 
 <script>
+/* ===================== Sync bridge =====================
+   Runs INSIDE each previewed page. Injected automatically when the page is
+   same-origin (local file loaded via 📂, or served from the same server).
+   For other domains, paste the snippet from "📋 קוד סנכרון" into the page. */
+function DS_BRIDGE() {
+  if (window.__ds || window.parent === window) return;
+  window.__ds = true;
+  // Buttons that send / save / delete are NOT mirrored, so an action happens once only.
+  var ACTION_RE = /submit|send|save|delete|remove|confirm|checkout|purchase|\bpay\b|\bbuy\b|שלח|שליחה|שמור|שמירה|מחק|מחיקה|הסר|אישור הגעה|אשר|תשלום|רכישה|הזמן/i;
+  var replaying = 0, scrollMuteUntil = 0, lastScroll = 0, scrollTimer = null;
+  function post(m) { m.__ds = 1; try { parent.postMessage(m, '*'); } catch (e) {} }
+  function sel(el) {
+    var parts = [];
+    while (el && el.nodeType === 1 && el !== document.documentElement) {
+      if (el.id && document.querySelectorAll('#' + CSS.escape(el.id)).length === 1) { parts.unshift('#' + CSS.escape(el.id)); break; }
+      var i = 1, s = el; while ((s = s.previousElementSibling)) if (s.tagName === el.tagName) i++;
+      parts.unshift(el.tagName.toLowerCase() + ':nth-of-type(' + i + ')');
+      el = el.parentElement;
+    }
+    return parts.join('>');
+  }
+  function q(s) { try { return s ? document.querySelector(s) : null; } catch (e) { return null; } }
+  function isAction(el) {
+    var c = el.closest('[data-sync]');
+    if (c) return c.getAttribute('data-sync') === 'no';
+    var b = el.closest('button, input[type=submit], input[type=button], input[type=image], [role=button], a');
+    if (!b) return false;
+    if (b.matches('input[type=submit], input[type=image]')) return true;
+    if (b.tagName === 'BUTTON' && b.form && (b.getAttribute('type') || 'submit').toLowerCase() === 'submit') return true;
+    var txt = [b.id, b.getAttribute('name'), b.getAttribute('onclick'), b.getAttribute('aria-label'), b.value, b.textContent].join(' ');
+    return ACTION_RE.test(txt);
+  }
+  function run(fn) { replaying++; try { fn(); } finally { replaying--; } }
+
+  // never let a mirrored event submit a form
+  document.addEventListener('submit', function (e) { if (replaying) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+
+  document.addEventListener('click', function (e) {
+    if (!e.isTrusted || replaying || !(e.target instanceof Element)) return;
+    var a = e.target.closest('a[href]');
+    if (a && !/^\s*(#|javascript:)/i.test(a.getAttribute('href'))) return; // page navigation is synced by URL
+    if (isAction(e.target)) { post({ t: 'action' }); return; }
+    post({ t: 'click', sel: sel(e.target) });
+  }, true);
+
+  function onInput(e) {
+    var t = e.target;
+    if (replaying || !(t instanceof Element)) return;
+    if (!t.matches('input, textarea, select') && !t.isContentEditable) return;
+    if (t.type === 'file') return;
+    post({ t: 'input', ev: e.type, sel: sel(t), value: t.isContentEditable ? t.innerHTML : t.value, checked: !!t.checked });
+  }
+  document.addEventListener('input', onInput, true);
+  document.addEventListener('change', onInput, true);
+
+  function sendScroll() {
+    var se = document.scrollingElement || document.documentElement;
+    var mx = se.scrollWidth - innerWidth, my = se.scrollHeight - innerHeight;
+    post({ t: 'scroll', rx: mx > 0 ? scrollX / mx : 0, ry: my > 0 ? scrollY / my : 0 });
+    lastScroll = Date.now();
+  }
+  addEventListener('scroll', function () {
+    if (Date.now() < scrollMuteUntil) return;
+    clearTimeout(scrollTimer);
+    if (Date.now() - lastScroll > 60) sendScroll(); else scrollTimer = setTimeout(sendScroll, 60);
+  }, { passive: true });
+
+  function rep() { post({ t: 'nav', href: location.href }); }
+  addEventListener('hashchange', rep);
+  addEventListener('popstate', rep);
+  ['pushState', 'replaceState'].forEach(function (k) {
+    var o = history[k];
+    history[k] = function () { var r = o.apply(this, arguments); rep(); return r; };
+  });
+
+  addEventListener('message', function (e) {
+    var m = e.data;
+    if (!m || m.__ds !== 1 || e.source !== parent) return;
+    var el;
+    if (m.t === 'click' && (el = q(m.sel))) {
+      run(function () {
+        if (el.focus) try { el.focus({ preventScroll: true }); } catch (x) {}
+        if (el.click) el.click(); else el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+      });
+    } else if (m.t === 'input' && (el = q(m.sel))) {
+      run(function () {
+        if (el.type === 'checkbox' || el.type === 'radio') {
+          Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'checked').set.call(el, m.checked);
+        } else if (el.isContentEditable) {
+          if (el.innerHTML !== m.value) el.innerHTML = m.value;
+        } else {
+          var proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype
+                    : el instanceof HTMLSelectElement ? HTMLSelectElement.prototype : HTMLInputElement.prototype;
+          // native setter keeps React/Vue inputs in sync
+          Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, m.value);
+        }
+        el.dispatchEvent(new Event(m.ev, { bubbles: true }));
+      });
+    } else if (m.t === 'scroll') {
+      var se = document.scrollingElement || document.documentElement;
+      scrollMuteUntil = Date.now() + 250;
+      scrollTo({ left: m.rx * (se.scrollWidth - innerWidth), top: m.ry * (se.scrollHeight - innerHeight), behavior: 'instant' });
+    } else if (m.t === 'nav' && m.href !== location.href) {
+      var u = new URL(m.href);
+      if (u.href.split('#')[0] === location.href.split('#')[0]) location.hash = u.hash;
+      else location.href = m.href;
+    }
+  });
+
+  post({ t: 'hello', href: location.href });
+}
+
 (() => {
   const PRESETS = [
     { id: 'se',      name: 'iPhone SE',        w: 375,  h: 667,  type: 'phone' },
@@ -145,6 +273,8 @@
     { id: 'laptop',  name: 'לפטופ',            w: 1366, h: 768,  type: 'desktop' },
     { id: 'hd',      name: 'מחשב HD',          w: 1920, h: 1080, type: 'desktop' },
   ];
+  // phone portrait, phone landscape, iPad, desktop
+  const COMMON = ['ip15', 'ip15:r', 'ipadmini', 'hd'];
 
   const $ = id => document.getElementById(id);
   const stage = $('stage'), urlInput = $('url');
@@ -154,33 +284,48 @@
     set(k, v) { try { localStorage.setItem('dp:' + k, JSON.stringify(v)); } catch {} }
   };
 
+  // A selection "key" is a device id, plus ":r" when rotated (so a phone can appear both ways)
   const state = {
     src: '',
-    selected: store.get('selected', ['ip15']),
-    rotated: store.get('rotated', {}),        // id -> bool
+    selected: store.get('sel2', ['ip15']),
     zoom: store.get('zoom', 'fit'),
     multi: store.get('multi', false),
     frame: store.get('frame', true),
+    sync: store.get('sync', true),
     custom: store.get('custom', []),
   };
   let blobUrl = null;
+  let fileHtml = null;       // local file contents (shown via srcdoc so sync works even from file://)
+  let syncUrl = '';          // the page all screens currently show
+  let frames = [];           // [{ key, iframe, href, connected }]
 
   const allDevices = () => PRESETS.concat(state.custom);
   const byId = id => allDevices().find(d => d.id === id);
+  const idOf = key => key.split(':')[0];
+  const isRot = key => key.endsWith(':r');
+  const flip = key => isRot(key) ? idOf(key) : idOf(key) + ':r';
+  const uniq = a => [...new Set(a)];
 
   function normalizeUrl(v) {
     v = v.trim();
-    if (!v) return '';
+    if (!v || v.startsWith('📂')) return state.src;
     if (/^(https?:|file:|blob:|data:|about:)/i.test(v)) return v;
     if (/^(localhost|127\.|\d+\.\d+\.\d+\.\d+)/i.test(v)) return 'http://' + v;
-    if (v.startsWith('/') || v.startsWith('./') || v.startsWith('../')) return v; // relative to this page
+    if (v.startsWith('/') || v.startsWith('./') || v.startsWith('../')) return v;
     return 'https://' + v;
   }
 
   function save() {
-    store.set('selected', state.selected); store.set('rotated', state.rotated);
-    store.set('zoom', state.zoom); store.set('multi', state.multi);
-    store.set('frame', state.frame); store.set('custom', state.custom);
+    store.set('sel2', state.selected); store.set('zoom', state.zoom);
+    store.set('multi', state.multi); store.set('frame', state.frame);
+    store.set('sync', state.sync); store.set('custom', state.custom);
+  }
+  const update = () => { save(); renderPresets(); renderStage(); };
+
+  let toastT;
+  function toast(msg) {
+    const t = $('toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2600);
   }
 
   function renderPresets() {
@@ -189,7 +334,7 @@
     allDevices().forEach(d => {
       const b = document.createElement('button');
       b.className = 'chip';
-      b.setAttribute('aria-pressed', state.selected.includes(d.id));
+      b.setAttribute('aria-pressed', state.selected.some(k => idOf(k) === d.id));
       b.innerHTML = `${d.name} <small>${d.w}×${d.h}</small>`;
       b.onclick = () => toggleDevice(d.id);
       if (d.custom) {
@@ -201,46 +346,73 @@
   }
 
   function toggleDevice(id) {
-    if (!state.multi) state.selected = [id];
-    else if (state.selected.includes(id)) {
-      if (state.selected.length > 1) state.selected = state.selected.filter(x => x !== id);
+    if (!state.multi) {
+      state.selected = [id + (isRot(state.selected[0] || '') ? ':r' : '')];
+    } else if (state.selected.some(k => idOf(k) === id)) {
+      const rest = state.selected.filter(k => idOf(k) !== id);
+      if (rest.length) state.selected = rest;
     } else state.selected.push(id);
-    save(); renderPresets(); renderStage();
+    update();
   }
 
   function removeCustom(id) {
     state.custom = state.custom.filter(d => d.id !== id);
-    state.selected = state.selected.filter(x => x !== id);
+    state.selected = state.selected.filter(k => idOf(k) !== id);
     if (!state.selected.length) state.selected = ['ip15'];
-    save(); renderPresets(); renderStage();
+    update();
   }
 
-  function dims(d) {
-    return state.rotated[d.id] ? { w: d.h, h: d.w } : { w: d.w, h: d.h };
+  function dims(key) {
+    const d = byId(idOf(key));
+    return isRot(key) ? { w: d.h, h: d.w } : { w: d.w, h: d.h };
   }
 
-  function computeScale(list) {
+  function computeScale(keys) {
     if (state.zoom !== 'fit') return parseFloat(state.zoom);
     const availW = stage.clientWidth - 32;
-    const availH = stage.clientHeight - 48 - 40; // label + padding
+    const availH = stage.clientHeight - 48 - 40;
     const pad = state.frame ? 40 : 4;
-    const maxH = Math.max(...list.map(d => dims(d).h));
-    const sumW = list.reduce((a, d) => a + dims(d).w, 0);
-    const gaps = (list.length - 1) * 32 + list.length * pad;
+    const maxH = Math.max(...keys.map(k => dims(k).h));
+    const sumW = keys.reduce((a, k) => a + dims(k).w, 0);
+    const gaps = (keys.length - 1) * 32 + keys.length * pad + keys.length * 30;
     let s = Math.min(1, (availH - pad) / maxH, (availW - gaps) / sumW);
-    // too many devices to fit in one row -> fit height only, let them wrap
-    if (s < 0.3) s = Math.min(1, (availH - pad) / maxH, (availW - pad) / Math.max(...list.map(d => dims(d).w)));
+    if (s < 0.25) s = Math.min(1, (availH - pad) / maxH, (availW - pad) / Math.max(...keys.map(k => dims(k).w)));
     return Math.max(0.15, s);
   }
 
   const placeholder = `<!doctype html><meta charset="utf-8"><body style="font-family:system-ui;display:grid;place-items:center;height:100vh;margin:0;color:#888;text-align:center;direction:rtl"><div><div style="font-size:42px">📱</div>הזינו כתובת או טענו קובץ<br><small id="v"></small></div><script>v.textContent=innerWidth+'×'+innerHeight<\/script>`;
 
+  const currentSrc = () => (syncUrl && syncUrl !== 'about:srcdoc') ? syncUrl : state.src;
+
+  function badge(f) {
+    const b = f.badge;
+    if (!state.sync || !state.src) { b.className = 'badge hidden'; return; }
+    if (f.connected) { b.className = 'badge on'; b.textContent = '🔗 מסונכרן'; b.title = ''; }
+    else {
+      b.className = 'badge off'; b.textContent = 'לא מסונכרן';
+      b.title = 'הדף בדומיין אחר, ולכן הדפדפן לא מאפשר לסנכרן אותו אוטומטית. טענו אותו כקובץ (📂), הריצו אותו מאותו שרת, או הדביקו בו את "קוד הסנכרון".';
+    }
+  }
+
+  function inject(iframe) {
+    try {
+      const w = iframe.contentWindow, d = w.document;   // throws if cross-origin
+      if (w.__ds || !d.documentElement) return;
+      const s = d.createElement('script');
+      s.textContent = '(' + DS_BRIDGE.toString() + ')();';
+      d.documentElement.appendChild(s);
+      s.remove();
+    } catch {}
+  }
+
   function renderStage() {
-    const list = state.selected.map(byId).filter(Boolean);
-    const s = computeScale(list);
+    const keys = state.selected.filter(k => byId(idOf(k)));
+    const s = computeScale(keys);
     stage.innerHTML = '';
-    list.forEach(d => {
-      const { w, h } = dims(d);
+    frames = [];
+    keys.forEach(key => {
+      const d = byId(idOf(key));
+      const { w, h } = dims(key);
       const wrap = document.createElement('div');
       wrap.className = 'device';
 
@@ -248,10 +420,15 @@
       label.className = 'device-label';
       label.innerHTML = `<b>${d.name}</b><span class="dims">${w}×${h}</span><span>${Math.round(s * 100)}%</span>`;
       const rot = document.createElement('button');
-      rot.textContent = state.rotated[d.id] ? 'שוכב ⤾' : 'עומד ⤾';
+      rot.textContent = isRot(key) ? 'שוכב ⤾' : 'עומד ⤾';
       rot.title = 'סיבוב המכשיר הזה';
-      rot.onclick = () => { state.rotated[d.id] = !state.rotated[d.id]; save(); renderStage(); };
-      label.appendChild(rot);
+      rot.onclick = () => {
+        state.selected = uniq(state.selected.map(k => k === key ? flip(k) : k));
+        update();
+      };
+      const bdg = document.createElement('span');
+      label.append(rot, bdg);
+      wrap.style.maxWidth = Math.max(w * s + (state.frame ? 40 : 4), 150) + 'px';
 
       const bezel = document.createElement('div');
       bezel.className = 'bezel ' + (state.frame ? d.type : 'none');
@@ -267,7 +444,14 @@
       iframe.style.width = w + 'px'; iframe.style.height = h + 'px';
       iframe.style.transform = `scale(${s})`;
       iframe.setAttribute('allow', 'clipboard-read; clipboard-write; geolocation; camera; microphone; fullscreen');
-      if (state.src) iframe.src = state.src; else iframe.srcdoc = placeholder;
+
+      const f = { key, iframe, wrap, badge: bdg, href: '', connected: false };
+      frames.push(f);
+      iframe.addEventListener('load', () => { f.connected = false; inject(iframe); setTimeout(() => badge(f), 400); });
+      badge(f);
+      const src = currentSrc();
+      if (fileHtml !== null && (!syncUrl || syncUrl === 'about:srcdoc')) iframe.srcdoc = fileHtml;
+      else if (src) iframe.src = src; else iframe.srcdoc = placeholder;
 
       screen.appendChild(iframe);
       bezel.appendChild(screen);
@@ -276,8 +460,45 @@
     });
   }
 
-  function load(src) {
+  // ---- messages from the previewed pages ----
+  let leaderT;
+  function markLeader(f) {
+    frames.forEach(x => x.wrap.classList.toggle('leader', x === f));
+    clearTimeout(leaderT); leaderT = setTimeout(() => f.wrap.classList.remove('leader'), 1200);
+  }
+
+  function navTo(href, from) {
+    if (!href || href === syncUrl) return;
+    if (href === 'about:srcdoc' && fileHtml !== null && !syncUrl) { syncUrl = href; return; }
+    syncUrl = href;
+    if (!state.sync) return;
+    frames.forEach(f => {
+      if (f === from || f.href === href) return;
+      if (f.connected) f.iframe.contentWindow.postMessage({ __ds: 1, t: 'nav', href }, '*');
+      else f.iframe.src = href;
+    });
+  }
+
+  window.addEventListener('message', e => {
+    const m = e.data;
+    if (!m || m.__ds !== 1) return;
+    const f = frames.find(x => x.iframe.contentWindow === e.source);
+    if (!f) return;
+    if (m.t === 'hello') { f.connected = true; f.href = m.href; badge(f); if (state.sync) navTo(m.href, f); return; }
+    if (m.t === 'nav') { f.href = m.href; if (state.sync) navTo(m.href, f); return; }
+    if (!state.sync) return;
+    if (m.t === 'action') {
+      if (frames.length > 1) toast(`פעולת שליחה בוצעה רק ב־${byId(idOf(f.key)).name} – לא שוכפלה למסכים האחרים`);
+      return;
+    }
+    if (m.t !== 'scroll') markLeader(f);
+    frames.forEach(x => { if (x !== f && x.connected) x.iframe.contentWindow.postMessage(m, '*'); });
+  });
+
+  function load(src, html = null) {
+    fileHtml = html;
     state.src = src;
+    syncUrl = '';
     try {
       const u = new URL(location.href);
       if (src && !src.startsWith('blob:')) u.searchParams.set('url', src); else u.searchParams.delete('url');
@@ -288,7 +509,10 @@
   }
 
   // ---- wiring ----
-  $('loadBtn').onclick = () => load(normalizeUrl(urlInput.value));
+  $('loadBtn').onclick = () => {
+    if (urlInput.value.startsWith('📂') && fileHtml !== null) load(state.src, fileHtml);
+    else load(normalizeUrl(urlInput.value));
+  };
   urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') $('loadBtn').click(); });
 
   $('fileInput').onchange = e => {
@@ -296,17 +520,24 @@
     if (blobUrl) URL.revokeObjectURL(blobUrl);
     blobUrl = URL.createObjectURL(new Blob([f], { type: 'text/html' }));
     urlInput.value = '📂 ' + f.name;
-    load(blobUrl);
+    f.text().then(html => load(blobUrl, html));
     e.target.value = '';
   };
 
   $('reloadBtn').onclick = () => renderStage();
-  $('openBtn').onclick = () => { if (state.src) window.open(state.src, '_blank'); };
+  $('openBtn').onclick = () => { const s = currentSrc(); if (s) window.open(s, '_blank'); };
+
+  $('commonBtn').onclick = () => {
+    state.multi = true; $('multi').checked = true;
+    state.selected = COMMON.slice();
+    state.zoom = 'fit'; $('zoom').value = 'fit';
+    update();
+  };
 
   $('rotateBtn').onclick = () => {
-    const anyPortrait = state.selected.some(id => !state.rotated[id]);
-    state.selected.forEach(id => state.rotated[id] = anyPortrait);
-    save(); renderStage();
+    const toLandscape = state.selected.some(k => !isRot(k));
+    state.selected = uniq(state.selected.map(k => idOf(k) + (toLandscape ? ':r' : '')));
+    update();
   };
 
   const zoomSel = $('zoom');
@@ -317,21 +548,40 @@
   multi.checked = state.multi;
   multi.onchange = () => {
     state.multi = multi.checked;
+    if (state.multi && state.selected.length === 1) state.selected = COMMON.slice();
     if (!state.multi) state.selected = state.selected.slice(0, 1);
-    save(); renderPresets(); renderStage();
+    update();
   };
 
   const frame = $('frame');
   frame.checked = state.frame;
   frame.onchange = () => { state.frame = frame.checked; save(); renderStage(); };
 
+  const sync = $('sync');
+  sync.checked = state.sync;
+  sync.onchange = () => {
+    state.sync = sync.checked; save();
+    frames.forEach(badge);
+    toast(state.sync ? 'סנכרון מסכים פעיל' : 'סנכרון מסכים כבוי – כל מסך עצמאי');
+  };
+
+  $('snippetBtn').onclick = async () => {
+    const code = '<script>(' + DS_BRIDGE.toString() + ')();<\/script>';
+    try { await navigator.clipboard.writeText(code); }
+    catch {
+      const ta = document.createElement('textarea'); ta.value = code; document.body.appendChild(ta);
+      ta.select(); try { document.execCommand('copy'); } catch {} ta.remove();
+    }
+    toast('הקוד הועתק – הדביקו אותו בדף הנבדק (לפני </body>). הוא פעיל רק כשהדף מוצג כאן.');
+  };
+
   $('customBtn').onclick = () => {
     const w = parseInt($('cw').value, 10), h = parseInt($('ch').value, 10);
     if (!(w >= 200 && h >= 200)) { alert('יש להזין רוחב וגובה (לפחות 200)'); return; }
     const id = 'c' + w + 'x' + h;
     if (!byId(id)) state.custom.push({ id, name: 'מותאם', w, h, type: w > h ? 'desktop' : w < 600 ? 'phone' : 'tablet', custom: true });
-    if (state.multi) { if (!state.selected.includes(id)) state.selected.push(id); } else state.selected = [id];
-    save(); renderPresets(); renderStage();
+    if (state.multi) { if (!state.selected.some(k => idOf(k) === id)) state.selected.push(id); } else state.selected = [id];
+    update();
   };
 
   document.addEventListener('keydown', e => {
@@ -343,8 +593,8 @@
   let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(renderStage, 120); });
 
   // initial
-  state.selected = state.selected.filter(byId);
-  if (!state.selected.length) state.selected = ['ip15'];
+  state.selected = uniq(state.selected.filter(k => byId(idOf(k))));
+  if (!state.selected.length) state.selected = state.multi ? COMMON.slice() : ['ip15'];
   const initial = new URLSearchParams(location.search).get('url') || store.get('url', '');
   urlInput.value = initial;
   renderPresets();

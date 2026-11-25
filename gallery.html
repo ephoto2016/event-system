@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>גלריית עבודות | עמנואל צילום - צלם אירועים</title>
+<meta name="description" content="גלריית עבודות של עמנואל צילום: חתונות, בר/בת מצווה, חינה ואירועים. רגעים אמיתיים, צילום אלגנטי ורגשי.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="he_IL">
+<meta property="og:title" content="גלריית עבודות | עמנואל צילום">
+<meta property="og:description" content="רגעים אמיתיים מחתונות ואירועים. בואו להתרשם.">
+<meta property="og:image" content="assets/og.jpg">
+<meta name="theme-color" content="#3f6b5c">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<a class="skip" href="#grid">דלג לגלריה</a>
+<header class="site"><div class="wrap">
+  <a class="brand" href="index.html"><span class="logo" id="logo">עמנואל<br>צילום</span><span>עמנואל צילום</span></a>
+  <nav class="main" aria-label="ראשי"><a href="index.html">בית</a><a href="gallery.html" aria-current="page">גלריה</a></nav>
+</div></header>
+
+<main class="wrap">
+  <section class="hero">
+    <div class="eyebrow">עמנואל צילום</div>
+    <h1>רגעים שנשארים לתמיד</h1>
+    <p>מבחר מהעבודות שלי. בחרו סוג אירוע, והקליקו על תמונה להגדלה.</p>
+  </section>
+  <div class="filters" id="filters" role="group" aria-label="סינון לפי סוג אירוע"></div>
+  <div class="grid" id="grid" aria-live="polite"></div>
+  <p class="empty" id="empty" hidden>עוד מעט נוסיף תמונות לקטגוריה הזו 💚</p>
+
+  <section class="cta">
+    <h2>רוצים שאצלם גם אתכם?</h2>
+    <p>ספרו לי על האירוע ונחזור אליכם בהקדם.</p>
+    <a class="btn" id="wa" href="#" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.2 14c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.800-1.200-4.600-4-4.700-4.200-.1-.2-1.100-1.500-1.100-2.800s.7-2 .9-2.300c.3-.3.600-.3.800-.3h.5c.2 0 .4 0 .6.500l.8 1.900c.1.200.1.300 0 .5l-.4.600c-.1.200-.3.300-.1.600.2.300.8 1.300 1.700 2.100 1.100 1 2.100 1.300 2.400 1.500.3.100.5.100.6-.1l.9-1c.2-.3.400-.2.600-.1l1.800.9c.3.100.4.200.5.300.1.200.1.800-.1 1.400z"/></svg>
+      שלחו הודעה בוואטסאפ</a>
+  </section>
+</main>
+<footer class="site"><div class="wrap">© עמנואל צילום · צילום אירועים בישראל</div></footer>
+
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="תצוגת תמונה" aria-hidden="true">
+  <button class="close" aria-label="סגירה">✕</button>
+  <button class="prev" aria-label="הקודמת">›</button>
+  <button class="next" aria-label="הבאה">‹</button>
+  <figure><img id="lbimg" alt=""></figure>
+  <div class="count" id="count" aria-live="polite"></div>
+</div>
+<script src="js/config.js"></script>
+<script src="js/gallery.js"></script>
+</body>
+</html>

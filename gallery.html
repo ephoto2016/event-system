@@ -29,9 +29,16 @@
     <h1>רגעים שנשארים לתמיד</h1>
     <p>מבחר מהעבודות שלי. בחרו סוג אירוע, והקליקו על תמונה להגדלה.</p>
   </section>
+  <section class="albums" aria-labelledby="alb-t">
+    <h2 id="alb-t">אלבומי חתונות</h2>
+    <p class="sub">לחצו על אלבום כדי לדפדף בו כאן באתר.</p>
+    <div class="album-list" id="albums"></div>
+  </section>
+  <div id="photos">
   <div class="filters" id="filters" role="group" aria-label="סינון לפי סוג אירוע"></div>
   <div class="grid" id="grid" aria-live="polite"></div>
   <p class="empty" id="empty" hidden>עוד מעט נוסיף תמונות לקטגוריה הזו 💚</p>
+  </div>
 
   <section class="cta">
     <h2>רוצים שאצלם גם אתכם?</h2>
@@ -51,6 +58,12 @@
   <div class="count" id="count" aria-live="polite"></div>
 </div>
 <script src="js/config.js"></script>
+<div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-hidden="true" aria-label="צפייה באלבום">
+  <div class="vbar"><button class="vclose" aria-label="סגירה">✕</button><strong id="vtitle"></strong>
+    <a id="vopen" target="_blank" rel="noopener">פתיחה בחלון חדש</a></div>
+  <iframe id="vframe" title="אלבום" allow="fullscreen"></iframe>
+</div>
 <script src="js/gallery.js"></script>
+<script src="js/albums.js"></script>
 </body>
 </html>

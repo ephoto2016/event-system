@@ -9,10 +9,10 @@ let data,tiles=[],visible=[],cur=0,lastFocus=null,active='all';
 // WhatsApp CTA
 (function(){const s=window.SITE||{};$('#wa').href='https://wa.me/'+s.whatsapp+'?text='+encodeURIComponent(s.whatsappText||'')})();
 
-fetch('assets/gallery.json').then(r=>r.json()).then(init).catch(()=>{empty.hidden=false});
+fetch('assets/gallery.json').then(r=>r.json()).then(init).catch(()=>{$('#photos').hidden=true});
 
 function init(d){
-  data=d;
+  data=d;if(!d.items.length){$('#photos').hidden=true;return}
   const add=(slug,label,n)=>{const b=document.createElement('button');b.className='chip';b.dataset.cat=slug;
     b.setAttribute('aria-pressed',slug==='all');b.innerHTML=label+'<small>'+n+'</small>';filters.append(b)};
   add('all','הכל',d.items.length);

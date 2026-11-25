@@ -1,6 +1,6 @@
-:root{--green:#3f6b5c;--green-d:#2f5246;--cream:#faf6ef;--paper:#fffdf9;--ink:#26302c;--muted:#6b756f;--gold:#b59a6d;--line:#e6dfd2;--r:14px}
+:root{--green:#3f6b5c;--green-d:#2f5246;--cream:#f7f8f4;--paper:#fff;--ink:#26302c;--muted:#6b756f;--gold:#b59a6d;--line:#e3e8e3;--r:14px}
 *{box-sizing:border-box;margin:0}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;overflow-x:clip}
 body{font-family:'Heebo',system-ui,sans-serif;background:var(--cream);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
 a{color:inherit}
 :focus-visible{outline:3px solid var(--gold);outline-offset:3px}
@@ -92,3 +92,13 @@ footer.site{border-top:1px solid var(--line);padding:24px 0;text-align:center;co
 @media(min-width:700px){.album-list{grid-template-columns:repeat(3,1fr)}}
 
 .herologo{display:block;margin:0 auto 6px;width:clamp(130px,34vw,200px);height:auto;mix-blend-mode:multiply}
+
+/* band like the client portal: soft sage gradient behind the logo */
+.hero{position:relative;padding-top:clamp(28px,5vw,48px);isolation:isolate}
+.hero::before{content:"";position:absolute;z-index:-1;top:-1px;bottom:0;left:50%;width:100vw;transform:translateX(-50%);background:linear-gradient(180deg,#d9e5df,#eaf0ec 70%,var(--cream));border-radius:0 0 50% 50%/0 0 36px 36px}
+.herologo{margin-bottom:10px}
+.btn{background:var(--green);color:#fff}
+.btn:hover{background:var(--green-d)}
+.btn svg{fill:#fff}
+.cta .btn{background:#fff;color:var(--green-d)}.cta .btn svg{fill:var(--green)}.cta .btn:hover{background:#eef3ef}
+.album{border-radius:18px}.tile{border-radius:18px}

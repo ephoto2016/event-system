@@ -103,3 +103,4 @@ footer.site{border-top:1px solid var(--line);padding:24px 0;text-align:center;co
 .cta .btn{background:#fff;color:var(--green-d)}.cta .btn svg{fill:var(--green)}.cta .btn:hover{background:#eef3ef}
 .album{border-radius:18px}.tile{border-radius:18px}
 .brand span:last-child{font-size:clamp(.82rem,3.6vw,1rem);line-height:1.2}
+.cta .alt{margin:16px 0 0;font-size:.95rem}.cta .alt a{color:#fff;text-underline-offset:3px}

@@ -11,7 +11,7 @@ a{color:inherit}
 header.site{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--cream) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 header.site .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:700;color:var(--green)}
-.logo{width:40px;height:40px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;font-size:.62rem;line-height:1.1;text-align:center;font-weight:700;overflow:hidden}
+.logo{width:40px;height:40px;border-radius:50%;background:#fff;border:1px solid var(--line);color:#fff;display:grid;place-items:center;font-size:.62rem;line-height:1.1;text-align:center;font-weight:700;overflow:hidden}
 .logo img{width:100%;height:100%;object-fit:cover}
 nav.main a{text-decoration:none;color:var(--muted);margin-inline-start:20px;font-size:.95rem}
 nav.main a[aria-current]{color:var(--green);font-weight:600}
@@ -90,3 +90,5 @@ footer.site{border-top:1px solid var(--line);padding:24px 0;text-align:center;co
 .album:hover img{transform:scale(1.05)}
 .album.noimg{padding:20px}
 @media(min-width:700px){.album-list{grid-template-columns:repeat(3,1fr)}}
+
+.herologo{display:block;margin:0 auto 6px;width:clamp(130px,34vw,200px);height:auto;mix-blend-mode:multiply}

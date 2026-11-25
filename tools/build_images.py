@@ -34,7 +34,7 @@ for cat in cats:
         save(im, out / f"{base}-600.webp", 600, 72)
         save(im, out / f"{base}-1600.webp", 1600, 82)
         items.append({"cat": cat["slug"], "src": base, "w": im.width, "h": im.height,
-                      "alt": f"{cat['label']} - צילום של עמנואל צילום"})
+                      "alt": f"{cat['label']} - עמנואל מימון צילום אירועים"})
         print("ok", f.name)
 (out / "gallery.json").write_text(json.dumps(
     {"categories": [c for c in cats if any(i["cat"] == c["slug"] for i in items)], "items": items},

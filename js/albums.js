@@ -7,6 +7,7 @@ fetch('assets/albums.json').then(r=>r.json()).then(a=>{
   a.forEach(x=>{const b=document.createElement('button');b.className='album';
     b.setAttribute('aria-label','אלבום '+x.title);
     const im=new Image();im.alt='אלבום '+x.title+' - עמוד ראשון';im.loading='lazy';im.decoding='async';
+    im.style.objectPosition=x.pos||'50% 40%';
     im.src='https://drive.google.com/thumbnail?id='+x.id+'&sz=w800';
     // אם התמונה לא נטענת: חוזרים לכרטיס עם השם
     im.onerror=()=>{im.remove();b.classList.add('noimg');b.insertAdjacentHTML('beforeend','<span class="name">'+x.title+'</span>')};

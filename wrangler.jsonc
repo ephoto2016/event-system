@@ -1,0 +1,7 @@
+{
+  "name": "gallery",
+  "compatibility_date": "2026-11-25",
+  "assets": { "directory": "." },
+  "workers_dev": true,
+  "preview_urls": false
+}

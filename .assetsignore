@@ -1,0 +1,7 @@
+.git
+.gitignore
+.assetsignore
+wrangler.jsonc
+tools
+ephoto
+assets/source

@@ -1,9 +1,55 @@
 <!doctype html>
 <html lang="he" dir="rtl">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>עמנואל מימון צילום אירועים</title>
-<meta name="description" content="עמנואל מימון צילום אירועים בישראל. האתר המלא בדרך.">
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css"></head>
-<body><main class="wrap"><section class="hero"><div class="eyebrow">עמנואל מימון צילום אירועים</div><h1>האתר החדש בדרך</h1>
-<p>בינתיים, הגלריה כבר כאן.</p><p style="margin-top:20px"><a class="btn" href="gallery.html" style="background:var(--green);color:#fff">לגלריה</a></p></section></main></body></html>
+<meta name="description" content="עמנואל מימון צילום אירועים: צילום אירועים ומשפחה, רגעים גדולים בחיוך ובשלווה. האתר החדש בדרך, והגלריה כבר כאן.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="he_IL">
+<meta property="og:title" content="עמנואל מימון צילום אירועים">
+<meta property="og:description" content="רגעים גדולים, בחיוך ובשלווה. צפו בגלריה והזמינו צילום לאירוע.">
+<meta property="og:image" content="assets/logo-512.webp">
+<meta name="theme-color" content="#3f6b5c">
+<link rel="icon" href="assets/logo-160.webp" type="image/webp">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+.soon{min-height:100svh;display:flex;flex-direction:column;background:linear-gradient(180deg,#d9e5df 0%,#eaf0ec 45%,var(--cream) 100%)}
+.soon main{flex:1;display:grid;place-items:center;text-align:center;padding:40px 0}
+.soon .logo-big{width:clamp(170px,42vw,260px);height:auto;mix-blend-mode:multiply;margin:0 auto 4px;display:block}
+.soon h1{font-size:clamp(2rem,6.5vw,3.6rem);font-weight:800;color:var(--green);line-height:1.15;margin:8px 0 10px;text-wrap:balance}
+.soon .lead{color:var(--muted);font-size:clamp(1rem,2.6vw,1.2rem);max-width:30em;margin:0 auto 6px;text-wrap:balance}
+.soon .tag{color:var(--gold);font-size:.95rem;letter-spacing:.06em;margin-bottom:26px}
+.actions{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:24px}
+.btn.ghost{background:#fff;color:var(--green-d);border:1px solid var(--line);box-shadow:0 4px 14px #3f6b5c14}
+.btn.ghost:hover{background:#f1f6f3}
+.btn.ghost svg{fill:var(--green)}
+.soon footer{padding:20px 16px;text-align:center;color:var(--muted);font-size:.85rem}
+.soon footer a{color:var(--green);text-underline-offset:3px}
+</style>
+</head>
+<body class="soon">
+<main class="wrap">
+  <div>
+    <img class="logo-big" src="assets/logo-512.webp" alt="עמנואל מימון - צילום אירועים ומשפחה" width="260" height="260" fetchpriority="high">
+    <h1>האתר החדש בדרך</h1>
+    <p class="lead">אנחנו מכינים לכם אתר חדש ומרשים. בינתיים אפשר להתרשם מהעבודות ולהזמין צילום לאירוע.</p>
+    <p class="tag">רגעים גדולים, בחיוך ובשלווה</p>
+    <div class="actions">
+      <a class="btn" href="gallery.html">לגלריית העבודות</a>
+      <a class="btn ghost" href="https://emanuelphoto.co.il/form" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h8l5 5v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm7 1.5V8h4.5L14 3.5zM8 12h8v1.5H8V12zm0 3.5h8V17H8v-1.5z"/></svg>
+        הזמנת אירוע</a>
+    </div>
+    <p style="margin-top:18px"><a id="wa" href="#" target="_blank" rel="noopener" style="color:var(--green);text-underline-offset:3px">או שלחו הודעה בוואטסאפ</a></p>
+  </div>
+</main>
+<footer>© עמנואל מימון צילום אירועים</footer>
+<script src="js/config.js"></script>
+<script>(function(){var s=window.SITE||{};document.getElementById('wa').href='https://wa.me/'+s.whatsapp+'?text='+encodeURIComponent(s.whatsappText||'')})();</script>
+</body>
+</html>

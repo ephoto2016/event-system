@@ -5,8 +5,12 @@ let last=null;
 const url=id=>'https://drive.google.com/file/d/'+id;
 fetch('assets/albums.json').then(r=>r.json()).then(a=>{
   a.forEach(x=>{const b=document.createElement('button');b.className='album';
-    b.innerHTML='<span class="ring">♡</span><span class="name"></span><span class="go">צפייה באלבום</span>';
-    b.querySelector('.name').textContent=x.title;b.onclick=()=>open(x,b);list.append(b)});
+    b.setAttribute('aria-label','אלבום '+x.title);
+    const im=new Image();im.alt='אלבום '+x.title+' - עמוד ראשון';im.loading='lazy';im.decoding='async';
+    im.src='https://drive.google.com/thumbnail?id='+x.id+'&sz=w800';
+    // אם התמונה לא נטענת: חוזרים לכרטיס עם השם
+    im.onerror=()=>{im.remove();b.classList.add('noimg');b.insertAdjacentHTML('beforeend','<span class="name">'+x.title+'</span>')};
+    b.append(im);b.onclick=()=>open(x,b);list.append(b)});
 }).catch(()=>{document.querySelector('.albums').hidden=true});
 function open(x,b){last=b;f.src=url(x.id)+'/preview';f.title='אלבום '+x.title;
   document.getElementById('vtitle').textContent=x.title;document.getElementById('vopen').href=url(x.id)+'/view';

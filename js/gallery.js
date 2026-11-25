@@ -6,9 +6,6 @@ const SIZES='(min-width:1100px) 25vw,(min-width:700px) 33vw,50vw';
 const BASE='assets/';
 let data,tiles=[],visible=[],cur=0,lastFocus=null,active='all';
 
-// WhatsApp CTA
-(function(){const s=window.SITE||{};$('#wa').href='https://wa.me/'+s.whatsapp+'?text='+encodeURIComponent(s.whatsappText||'')})();
-
 fetch('assets/gallery.json').then(r=>r.json()).then(init).catch(()=>{$('#photos').hidden=true});
 
 function init(d){
